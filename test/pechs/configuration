@@ -1,0 +1,17 @@
+INITIALS_VERSION=5 #initials format version
+MATERIALS_PATH=./materials #materials path
+SPECTRS_PATH=./spectrs #spectres path
+INITIALS_PATH=./initials #initials path
+RESULTS_PATH=./results #results path
+INTERMEDIATES_PATH=./intermediates #intermediates path
+GPU_PER_NODE=4 #
+DETECTORS_FILE=detectors #
+POINTS_FILE=points #
+TRIANGLES_FILE=triangles #
+SOURCE_FILE=source #
+LAYERS_FILE=layers #
+NODES_COUNT=6 #
+MAX_TIME=100 #
+RUNS_COUNT=1 #
+LISTS_PATH=.//lists
+PROJECT_NAME=pechs 

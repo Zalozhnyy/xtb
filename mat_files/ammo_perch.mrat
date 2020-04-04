@@ -1,0 +1,7 @@
+[Composite]	ammo_perch
+[Element]	N	0.11965812
+[Element]	H	0.034188034
+[Element]	Cl	0.299145299
+[Element]	O	0.547008547
+[Density]	1.95
+[Shell]	1	ap

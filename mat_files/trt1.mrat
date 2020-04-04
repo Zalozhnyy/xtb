@@ -1,0 +1,12 @@
+[Composite]	TRT_1
+[Element]	H	0.04380
+[Element]	C	0.12230
+[Element]	N	0.09590
+[Element]	O	0.43720
+[Element]	Al	0.05000
+[Element]	Si	0.00050
+[Element]	S	0.00030
+[Element]	Cl	0.24140
+[Element]	Fe	0.00860
+[Density]	1.7
+[Shell] 1 корпус

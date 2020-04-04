@@ -1,0 +1,13 @@
+[Composite] VT6C
+[Element]	Ti	 0.898995   
+[Element]	Fe	 0.000250   
+[Element]	C	 0.000100   
+[Element]	Si	 0.000150   
+[Element]	V	 0.040000   
+[Element]	N	 0.000040   
+[Element]	Al	 0.060000   
+[Element]	Zr	 0.000300   
+[Element]	O	 0.000150   
+[Element]	H	 0.000015 
+[Density] 4.455  
+[Shell] 1 корпус

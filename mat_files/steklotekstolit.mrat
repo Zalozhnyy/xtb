@@ -1,0 +1,13 @@
+[Composite]	STEKLTEKSTOLIT
+[Element]	H	 0.010400   
+[Element]	C	 0.150300   
+[Element]	N	 0.000330   
+[Element]	O	 0.506230   
+[Element]	Mg	 0.018800   
+[Element]	Al	 0.103000   
+[Element]	Na	 0.000370   
+[Element]	Fe	 0.000200   
+[Element]	K	 0.004500   
+[Element]	Si	 0.205870 
+[Density] 1.8  
+[Shell] 1 корпус

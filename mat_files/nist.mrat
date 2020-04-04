@@ -1,0 +1,39 @@
+[Composite] Al
+[Element] Al  	1.0
+[Density] -1.00
+[Shell] 1 кожух_1
+[Composite] Fe
+[Element] Fe  	1.0
+[Density] -1.00
+[Shell] 1 кожух_1
+[Composite] glass
+[Element] P  	0.35
+[Element] Al  	0.05
+[Element] Mg  	0.06
+[Element] O  	0.54
+[Density] 2.25
+[Shell] 1 кожух_1
+[Composite] C
+[Element] C  	1.0
+[Density] -1.00
+[Shell] 1 кожух_1
+[Composite] Cr
+[Element] Cr  	1.0
+[Density] -1.00
+[Shell] 1 кожух_1
+[Composite] Ti
+[Element] Ti  	1.0
+[Density] -1.00
+[Shell] 1 кожух_1
+[Composite] Ta
+[Element] Ta  	1.0
+[Density] -1.00
+[Shell] 1 кожух_1
+[Composite] water
+[Element] H  	0.1111
+[Element] O  	0.8889
+[Density] 1.00
+[Shell] 1 кожух_1
+
+
+

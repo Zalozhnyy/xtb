@@ -1,0 +1,47 @@
+1 - KOM
+
+2 - ANN
+
+3 - FOT
+
+4 - BRM
+
+5 - BRM
+
+6 - ANN
+
+7 - ELA
+
+8 - EXC
+
+9 - ROT_AIR
+
+10 - ION
+
+11 - ATT
+
+12 - REC_AIR
+
+FBB:
+0 - ничего
+1 - FBB_E
+2 - FBB_P
+
+prtk_table
+FBB_E 262
+ANN 275
+EXC 289
+ELA 311
+BRM 341
+FOT 363
+KOM 380
+PAR 405
+ION 453
+
+В Добавочном
+ATT
+ELA
+EXC
+ION
+REC
+ROT

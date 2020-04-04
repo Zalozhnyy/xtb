@@ -1,0 +1,11 @@
+[Composite] glass
+[Element] P  	0.35
+[Element] Al  	0.05
+[Element] Mg  	0.06
+[Element] O  	0.54
+[Density] 2.25
+[Shell] 1 кожух_1
+[Shell] 3 кожух_2
+
+
+

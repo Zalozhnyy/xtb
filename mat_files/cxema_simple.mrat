@@ -1,0 +1,29 @@
+[Composite]	SIMPLE
+[Element]	  O		0.448293793
+[Element]	  Al	0.040248276
+[Element]	  Si	0.40062069
+[Element]	  P		0.006448276
+[Element]	  Cr	0.000262069
+[Element]	  Na	0.000214483
+[Element]	  S		0.00012069
+[Element]	  Ca	0.000198621
+[Element]	  Mg	0.000165517
+[Element]	  C		0.09122069
+[Element]	  H		0.012
+[Element]	  Ca	0.000206897
+[Density]	0.791  
+[Shell]	3	obolochka
+
+[Composite]	VT6C
+[Element]	Ti	 0.898995   
+[Element]	Fe	 0.000250   
+[Element]	C	 0.000100   
+[Element]	Si	 0.000150   
+[Element]	V	 0.040000   
+[Element]	N	 0.000040   
+[Element]	Al	 0.060000   
+[Element]	Zr	 0.000300   
+[Element]	O	 0.000150   
+[Element]	H	 0.000015 
+[Density]	4.455  
+[Shell]	4	titan

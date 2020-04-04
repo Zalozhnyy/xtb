@@ -1,0 +1,43 @@
+[Composite] KAMASUT
+[Element]	O	0.0098737864  
+[Element]	C	0.8349708738  
+[Element]	Fe	0.0040776699  
+[Element]	Ti	0.0034951456  
+[Element]	H	0.0009902913  
+[Element]	N	0.0009611650  
+[Element]	Si	0.1456310680  
+[Density]	 1.8494174757
+[Shell] 2 korpus
+
+[Composite] AL
+[Element] Al  	1.0
+[Density] 2.7
+[Shell] 3 aluminiy
+
+[Composite] FE
+[Element] Fe  	1.0
+[Density] 7.87
+[Shell] 4 sborka
+
+[Composite] SI
+[Element] Si  	1.0
+[Density] 2.5
+[Shell] 5 kernel
+
+[Composite] AL05
+[Element] Al  	1.0
+[Density] 1.35
+[Shell] 6 pribor
+
+
+[Composite] KABEL
+[Element]	C	0.61905
+[Element]	H	0.10317
+[Element]	Cu	0.27778
+[Density]	3.2111  
+[Shell] 7 Kabel
+
+
+
+
+

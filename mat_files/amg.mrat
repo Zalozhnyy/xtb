@@ -1,0 +1,11 @@
+[Composite] AMG
+[Element]	Be 	0.00002
+[Element]	Mg 	0.058
+[Element]	Al 	0.93673
+[Element]	Ti 	0.00025
+[Element]	Mn 	0.005
+[Density] 2.64
+[Shell] 1 amg6
+
+
+

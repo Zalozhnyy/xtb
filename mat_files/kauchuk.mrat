@@ -1,0 +1,8 @@
+[Composite]	KAUCHUK
+[Element]	N	0.3712
+[Element]	H	0.0523
+[Element]	C	0.1072
+[Element]	O	0.4458
+[Element]	Cl	0.0235
+[Density]	1.57
+[Shell]	1	ap

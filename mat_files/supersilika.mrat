@@ -1,0 +1,10 @@
+[Composite] SUPSILIKA-M2-6
+[Element]	O	 0.482570
+[Element]	Al	 0.018700
+[Element]	Si	 0.497500
+[Element]	Na	 0.000370
+[Element]	Ca	 0.000360
+[Element]	Mg	 0.000300
+[Element]	S	 0.000200
+[Density] 0.175  
+[Shell] 1 корпус_внешний

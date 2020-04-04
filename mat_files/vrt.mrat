@@ -1,0 +1,15 @@
+[Composite]	VRT
+[Element]	H	0.0436
+[Element]	Li	0.0054
+[Element]	B	0.3457
+[Element]	C	0.2551
+[Element]	N	0.0305
+[Element]	O	0.1749
+[Element]	F	0.0146
+[Element]	Al	0.0042
+[Element]	S	0.0006
+[Element]	Cl	0.0959
+[Element]	K	0.0226
+[Element]	Fe	0.0069
+[Density]	1.5
+[Shell] 1 корпус

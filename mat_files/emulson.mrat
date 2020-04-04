@@ -1,0 +1,15 @@
+[Composite] EMUL
+[Element] H  	0.0141
+[Element] C  	0.072261
+[Element] N  	0.01932
+[Element] O  	0.066101
+[Element] S  	0.00189
+[Element] Br  	0.349103
+[Element] Ag  	0.474105
+[Element] I  	0.00312
+[Density] 3.82
+[Shell] 1 кожух_1
+[Shell] 3 кожух_2
+
+
+
