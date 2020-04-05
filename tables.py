@@ -69,12 +69,14 @@ def xxmkdir(drname):
     if not os.path.isdir(os.path.join(os.getcwd(), dirname)):
         os.makedirs(os.path.join(os.getcwd(), dirname))
 
+
 def info(title):
     print(title)
     print('module name:', __name__)
     if hasattr(os, 'getppid'):  # only available on Unix
         print('parent process:', os.getppid())
     print('process id:', os.getpid())
+
 
 def xrun(modname, args):
     ##    print(modname)                     # run in a new process
@@ -290,24 +292,32 @@ class Example(Frame):
             # print(self._bd['rmp'])
             ##            dr_tab = os.path.join(dr_prj, 'pechs\\materials')
             try:
-                if os.path.exists(os.path.join(dr_prj,'pechs\materials')):
-                    dr_tab = os.path.join(dr_prj,'pechs\materials')
-                else : raise Exception
+                if os.path.exists(os.path.join(dr_prj, 'pechs')):
+                    if not os.path.exists(os.path.join(dr_prj, 'pechs\materials')):
+                        os.mkdir(os.path.join(dr_prj, 'pechs\materials'))
+                    dr_tab = os.path.join(dr_prj, 'pechs\materials')
+                else:
+                    raise Exception
             except Exception:
-                if os.path.exists(os.path.join(dr_prj,'pechs.proj.addr')):
-                    file = os.path.exists(os.path.join(dr_prj,'pechs.proj.addr'))
-                    with open(file,'r',encoding='utf-8') as f:
+                if os.path.exists(os.path.join(dr_prj, 'pechs.proj.addr')):
+                    file = os.path.exists(os.path.join(dr_prj, 'pechs.proj.addr'))
+                    with open(file, 'r', encoding='utf-8') as f:
                         lines = f.readlines()
                     pech_name = lines[0].strip()
+                    if not os.path.exists(os.path.join(dr_prj, f'{pech_name}\materials')):
+                        os.mkdir(os.path.join(dr_prj, f'{pech_name}\materials'))
                     pech_name = pech_name + '/materials'
-                    dr_tab = os.path.join(dr_prj,pech_name)
+                    dr_tab = os.path.join(dr_prj, pech_name)
                 else:
-                    messagebox.showerror('Path error','Не обнаружена папка pechs/файл конфигурации.\n'
-                                                      'Выберите директорию pech/materials вручную')
-                    dr_tab = fd.askdirectory(title='Выберите директорию pech/materials',
+                    messagebox.showerror('Path error', 'Не обнаружена папка pechs/файл конфигурации.\n'
+                                                       'Выберите директорию pech вручную')
+                    dr_tab = fd.askdirectory(title='Выберите директорию pech',
                                              initialdir=dr_prj)
+                    if not os.path.exists(os.path.join(dr_tab, f'materials')):
+                        os.mkdir(os.path.join(dr_tab, f'materials'))
+                    dr_tab = os.path.join(dr_tab, f'materials')
 
-            xxmkdir(dr_tab)
+            # xxmkdir(dr_tab)
             self._bd['tab'] = dr_tab
             self._bd['lay'] = dr_tab
             ##            dr_lay = os.path.join(dr_prj, 'pechs\\initials')
@@ -338,7 +348,7 @@ class Example(Frame):
         dp = self._bd.copy()
         Process(target=xrun, args=('ph_annig_enrg', dp)).start()
 
-    def onCalcTbl(self):   # рассчитать распределения кнопка
+    def onCalcTbl(self):  # рассчитать распределения кнопка
         self.onElPhoto()
         self.onPhBrems()
         self.onPhAnig()
