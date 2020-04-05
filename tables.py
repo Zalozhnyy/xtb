@@ -259,9 +259,9 @@ class Example(Frame):
         """
         """
         self.onOpenProj()  # добавление в ямл новых штук
-        flnmp = askopenfilename(initialdir=self._bd['home'], title="Выберите файл проекта",
-                                filetypes=[('Файл проекта', '.prj')])
-        # flnmp = r'C:\work\test\TEST.PRJ'
+        # flnmp = askopenfilename(initialdir=self._bd['home'], title="Выберите файл проекта",
+        #                         filetypes=[('Файл проекта', '.prj')])
+        flnmp = r'C:\work\test\TEST.PRJ'
 
         print(('file {0}'.format(flnmp)))
         if len(flnmp) > 2:

@@ -194,8 +194,8 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     for i in im:
         ie = '{0:03d}'.format(i)
         for pp in prc:
-            if f'_{pp}_' in exist_list[0].keys():
-                if exist_list[0].get(f'_{pp}_')[0] == 1:
+            if f'_{pp}_' in exist_list.keys():
+                if exist_list.get(f'_{pp}_')[0] == 1:
                     f_old = '_' + pp + '_' + mt
                     fsp = os.path.join(fs, f_old)
                     ls = prt[pp](fsp, kf)
@@ -238,13 +238,19 @@ def main(dp):
     print(fllog)
 
     par_dir = os.path.join(idir_, par_path(idir_))
-    exist_list = Project_reader.DataParcer(par_dir).par_decoder()
+    part_list = Project_reader.DataParcer(par_dir).par_decoder()
+    exist_dict = {}
+    for dicts in part_list:
+        for key in dicts.keys():
+            if dicts.get(key)[0] == 1:
+                exist_dict.update({key: dicts.get(key)})
+    print(exist_dict)
 
     for mat_, ro in list(dly.keys()):
         mt = mat_.upper()
         lmat = dly[(mat_, ro)]
         if mt in pmat:
-            prtk_copy_file(idir_, pdir, mt, ro, lmat, dlog, exist_list)
+            prtk_copy_file(idir_, pdir, mt, ro, lmat, dlog, exist_dict)
 
             sx = 'For {material} Density = {density} {lay}'.format(material=mat_, density=ro, lay=lmat)
             print(sx)

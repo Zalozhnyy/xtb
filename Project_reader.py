@@ -72,7 +72,6 @@ class DataParcer:
                 value = list(map(int, lines[i].split()[1:]))
                 part.append_dict(key=key, value=value)
 
-            print(part.dict_return())
             self.dict_list.append(part.dict_return())
             string_num += 4  # переход к следующему кластеру (последняя строка с цифрами в процессах)
 

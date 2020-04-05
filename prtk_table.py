@@ -226,8 +226,13 @@ def main(dp):
     k = 1
 
     par_dir = os.path.join(idir_, par_path(idir_))
-    exist_list = Project_reader.DataParcer(par_dir).par_decoder()
-    print(exist_list)
+    part_list = Project_reader.DataParcer(par_dir).par_decoder()
+    exist_dict = {}
+    for dicts in part_list:
+        for key in dicts.keys():
+            if dicts.get(key)[0] == 1:
+                exist_dict.update({key: dicts.get(key)})
+    print(exist_dict)
     ##    mat_fl_ = dp['mf']
     ##    nm_comp_ = get_list_material(mat_fl_)
 
@@ -261,13 +266,12 @@ def main(dp):
         ttl_st_ = ttl_ - xer_[:, -1]
         vz_ = zip(E_, ttl_, ttl_st_)
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
-                    for v_ in vz_:
-                        out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+        if ff_ in exist_dict.keys():
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
+                for v_ in vz_:
+                    out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
         # ---------------------------------------------------------------------------------
         key_ = '.ann'
         xt_ = cs_el_[:, -1]
@@ -276,13 +280,13 @@ def main(dp):
         xv_ = sl_c * np.sqrt(1.0 - (1. / xg_) ** 2)
         vz_ = zip(E_, xt_ * xv_)
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
-                    for v_ in vz_:
-                        out_.write(parot_[key_]['data'].format(v_[0], v_[1]))
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+        if ff_ in exist_dict.keys():
+
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
+                for v_ in vz_:
+                    out_.write(parot_[key_]['data'].format(v_[0], v_[1]))
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
         # ---------------------------------------------------------------------------------
         key_ = '.528'
         xer_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
@@ -292,13 +296,13 @@ def main(dp):
         ##        ttl_st_ = ttl_ - xer_[:,-1]
         vz_ = zip(E_, cs_el_[:, 2], np.power(10, xer_[:, 1]) * 10 ** (-6))
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, Emin=E_[0], nE=nE_))
-                    for v_ in vz_:
-                        out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+        if ff_ in exist_dict.keys():
+
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, Emin=E_[0], nE=nE_))
+                for v_ in vz_:
+                    out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
         # ---------------------------------------------------------------------------------
         key_ = '.526'
         rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
@@ -316,25 +320,26 @@ def main(dp):
         ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
         vz_ = zip(E_, cs_el_[:, 0])
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, Epp=2.0 * phis.ms_el_gr / Am_, nG=nG_))
-                    for k_, v_ in enumerate(vz_):
-                        ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                        vv_ = p_rr_[k_, :]
-                        ##                vv_= np.arccos(vv_[::-1])
-                        vv_ = vv_[::-1]
-                        tt = vv_[-2] + (vv_[-2] - vv_[-3])  # /(gg_[-2]-gg_[-3])
-                        vv_[-1] = max(tt, -1.)
-                        vv_[0] = 1.0
-                        vv_ = np.arccos(vv_)
+        if ff_ in exist_dict.keys():
 
-                        ##                vv_[0] = 0.0
-                        mm_ = ['{0:12.5E} '.format(c_) for c_ in vv_]
-                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                ##
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(
+                    parot_[key_]['head'].format(material=mat_, nE=nE_, Epp=2.0 * phis.ms_el_gr / Am_, nG=nG_))
+                for k_, v_ in enumerate(vz_):
+                    ss_ = parot_[key_]['data'].format(v_[0], v_[1])
+                    vv_ = p_rr_[k_, :]
+                    ##                vv_= np.arccos(vv_[::-1])
+                    vv_ = vv_[::-1]
+                    tt = vv_[-2] + (vv_[-2] - vv_[-3])  # /(gg_[-2]-gg_[-3])
+                    vv_[-1] = max(tt, -1.)
+                    vv_[0] = 1.0
+                    vv_ = np.arccos(vv_)
+
+                    ##                vv_[0] = 0.0
+                    mm_ = ['{0:12.5E} '.format(c_) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+            ##
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
         # ---------------------------------------------------------------------------------
         key_ = '.527'
@@ -347,18 +352,18 @@ def main(dp):
         p_rr_ = np.power(10, p_rr_) * 10 ** (-6)
         vz_ = zip(E_, cs_el_[:, 1])
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
-                    for k_, v_ in enumerate(vz_):
-                        ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                        vv_ = p_rr_[k_, :]
-                        vv_ = vv_[::-1]
-                        vv_[0] = 0.0
-                        mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
-                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+        if ff_ in exist_dict.keys():
+
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
+                for k_, v_ in enumerate(vz_):
+                    ss_ = parot_[key_]['data'].format(v_[0], v_[1])
+                    vv_ = p_rr_[k_, :]
+                    vv_ = vv_[::-1]
+                    vv_[0] = 0.0
+                    mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
         # ---------------------------------------------------------------------------------
 
@@ -371,13 +376,13 @@ def main(dp):
         eb_ph_ = eb_ph_[:, -1] * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, -1], eb_ph_)
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, bE=eb_ph_[-1]))
-                    for v_ in vz_:
-                        out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+        if ff_ in exist_dict.keys():
+
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, bE=eb_ph_[-1]))
+                for v_ in vz_:
+                    out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
         # ---------------------------------------------------------------------------------
 
@@ -390,15 +395,15 @@ def main(dp):
             p_ive_[k_, :] = np.interp(gg_, gamma_, ive_[k_, :]) * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, 2])
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
-                    for k_, v_ in enumerate(vz_):
-                        ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                        mm_ = ['{0:12.5E}'.format(c_) for c_ in p_ive_[k_, :]]
-                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+        if ff_ in exist_dict.keys():
+
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
+                for k_, v_ in enumerate(vz_):
+                    ss_ = parot_[key_]['data'].format(v_[0], v_[1])
+                    mm_ = ['{0:12.5E}'.format(c_) for c_ in p_ive_[k_, :]]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
         # ---------------------------------------------------------------------------------
 
@@ -417,31 +422,31 @@ def main(dp):
         p_rr_[i_rr_] = 0.0
         vz_ = zip(E_, cs_ph_[:, 3])
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
-                    ##            ss_ = parot_[key_]['data'].format(1.0, 0.0)
-                    ss_ = parot_[key_]['data'].format(E2_, 0.0)
-                    vt_ = 0.0 * np.ones(nG_)
-                    mm_ = ['{0:12.5E}'.format(c_) for c_ in vt_]
-                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+        if ff_ in exist_dict.keys():
 
-                    for k_, v_ in enumerate(vz_):
-                        if E_[k_] >= E2_:
-                            vv_ = p_rr_[k_, :]
-                            dd_ = v_[0] - E2_ - vv_[-1]
-                            dlog.write('E = {0}: Delta ={1}\n'.format(v_[0], dd_) + '\n')
-                            if dd_ < 0.:
-                                dlog.write('Vend = {0} '.format(v_[-1]) + '\n')
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
+                ##            ss_ = parot_[key_]['data'].format(1.0, 0.0)
+                ss_ = parot_[key_]['data'].format(E2_, 0.0)
+                vt_ = 0.0 * np.ones(nG_)
+                mm_ = ['{0:12.5E}'.format(c_) for c_ in vt_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
 
-                                vv_[-1] = v_[0] - E2_
-                                dlog.write('Change on Vend = {0}\n'.format(v_[-1]) + '\n')
+                for k_, v_ in enumerate(vz_):
+                    if E_[k_] >= E2_:
+                        vv_ = p_rr_[k_, :]
+                        dd_ = v_[0] - E2_ - vv_[-1]
+                        dlog.write('E = {0}: Delta ={1}\n'.format(v_[0], dd_) + '\n')
+                        if dd_ < 0.:
+                            dlog.write('Vend = {0} '.format(v_[-1]) + '\n')
 
-                            ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                            mm_ = ['{0:12.5E}'.format(c_) for c_ in p_rr_[k_, :]]
-                            out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+                            vv_[-1] = v_[0] - E2_
+                            dlog.write('Change on Vend = {0}\n'.format(v_[-1]) + '\n')
+
+                        ss_ = parot_[key_]['data'].format(v_[0], v_[1])
+                        mm_ = ['{0:12.5E}'.format(c_) for c_ in p_rr_[k_, :]]
+                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
         # ---------------------------------------------------------------------------------
 
@@ -467,16 +472,16 @@ def main(dp):
         p_rr_[:, -1] = xeb_
         vz_ = zip(E_, cs_el_[:, 3])
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_list[0].keys():
-            if exist_list[0].get(ff_)[0] == 1:
-                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, Emin=E_[0], nG=nG_))
-                    for k_, v_ in enumerate(vz_):
-                        ss_ = parot_[key_]['data'].format(v_[0], v_[1], p_ra_[k_])
-                        vv_ = p_rr_[k_, ::-1]
-                        mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
-                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+        if ff_ in exist_dict.keys():
+
+            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, Emin=E_[0], nG=nG_))
+                for k_, v_ in enumerate(vz_):
+                    ss_ = parot_[key_]['data'].format(v_[0], v_[1], p_ra_[k_])
+                    vv_ = p_rr_[k_, ::-1]
+                    mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+            copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
     if True:
         pass
