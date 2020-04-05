@@ -26,6 +26,7 @@ v = version_info[0]
 
 from tkinter import *
 from tkinter.filedialog import askopenfilename, askdirectory, asksaveasfilename
+import tkinter.filedialog as fd
 from tkinter.simpledialog import askfloat
 from tkinter import messagebox
 
@@ -64,6 +65,7 @@ def read_prj(prjfname, stk='Layers name'):
 
 def xxmkdir(drname):
     dirname = os.path.normpath(drname)
+    print(os.getcwd())
     if not os.path.isdir(os.path.join(os.getcwd(), dirname)):
         os.makedirs(os.path.join(os.getcwd(), dirname))
 
@@ -272,22 +274,39 @@ class Example(Frame):
             print(('Файл с описанием оболочек {}'.format(nm_ltb)))
             dr_prj = os.path.dirname(os.path.normpath(flnmp))
             dr_path = os.path.split(dr_prj)[0]
-            fl_path = os.path.join(dr_path, 'path.config')
-            try:
-                bd_path = yaml.load(open(fl_path))
-                print(fl_path)
-            except IOError:
-                print(('{0} не существует'.format(fl_path)))
-                print(Exception)
-                bd_path = {}
-
-            print(bd_path)
+            # fl_path = os.path.join(dr_path, 'path.config')
+            # try:
+            #     bd_path = yaml.load(open(fl_path))
+            #     print(fl_path)
+            # except IOError:
+            #     print(('{0} не существует'.format(fl_path)))
+            #     print(Exception)
+            #     bd_path = {}
+            #
+            # print(bd_path)
             self._bd['proj'] = dr_prj
             ##            ltb = glob.glob(dr_prj + os.sep +  '*.LTB')
             self._bd['rmp'] = os.path.normpath(os.path.join(dr_prj, nm_ltb))
             # print(self._bd['rmp'])
             ##            dr_tab = os.path.join(dr_prj, 'pechs\\materials')
-            dr_tab = os.path.join(dr_path, bd_path.get('tables', 'tables'))
+            try:
+                if os.path.exists(os.path.join(dr_prj,'pechs\materials')):
+                    dr_tab = os.path.join(dr_prj,'pechs\materials')
+                else : raise Exception
+            except Exception:
+                if os.path.exists(os.path.join(dr_prj,'pechs.proj.addr')):
+                    file = os.path.exists(os.path.join(dr_prj,'pechs.proj.addr'))
+                    with open(file,'r',encoding='utf-8') as f:
+                        lines = f.readlines()
+                    pech_name = lines[0].strip()
+                    pech_name = pech_name + '/materials'
+                    dr_tab = os.path.join(dr_prj,pech_name)
+                else:
+                    messagebox.showerror('Path error','Не обнаружена папка pechs/файл конфигурации.\n'
+                                                      'Выберите директорию pech/materials вручную')
+                    dr_tab = fd.askdirectory(title='Выберите директорию pech/materials',
+                                             initialdir=dr_prj)
+
             xxmkdir(dr_tab)
             self._bd['tab'] = dr_tab
             self._bd['lay'] = dr_tab
