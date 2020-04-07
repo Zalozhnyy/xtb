@@ -319,7 +319,7 @@ class Example(Frame):
 
             # xxmkdir(dr_tab)
             self._bd['tab'] = dr_tab
-            self._bd['lay'] = dr_tab
+            self._bd['lay'] = os.path.join(os.path.split(dr_tab)[0], 'initials')
             ##            dr_lay = os.path.join(dr_prj, 'pechs\\initials')
             ##            xxmkdir(dr_lay)
 
