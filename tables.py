@@ -391,10 +391,10 @@ class Example(Frame):
 
             # sgs convert to si
 
-            for i in range(len(out_lay)):
-                density = eval(out_lay[i][2])
-                density *= 1000
-                out_lay[i][2] = f'{density}'
+            # for i in range(len(out_lay)):
+            #     density = eval(out_lay[i][2])
+            #     density *= 1000
+            #     out_lay[i][2] = f'{density}'
 
             return out_lay
 
