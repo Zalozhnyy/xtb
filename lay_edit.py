@@ -240,12 +240,13 @@ class Example(Frame):
                     return
                 else:
                     self.parent.destroy()
+        elif answer == False:
+            self.parent.destroy()
 
     def onSave(self):
         """ """
         sps = []
         for i in range(self._n):
-            print(self._nmat[i]['text'])
             if len(self._ro[i].get()) == 0 or self._nmat[i]['text'] == '_':
                 continue
             if self._exist_mat[i] is False:

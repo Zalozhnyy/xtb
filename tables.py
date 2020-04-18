@@ -23,7 +23,7 @@ import logging
 from sys import version_info
 
 v = version_info[0]
-
+import locale
 from tkinter import *
 from tkinter.filedialog import askopenfilename, askdirectory, asksaveasfilename
 import tkinter.filedialog as fd
@@ -263,9 +263,9 @@ class Example(Frame):
         """
         """
         self.onOpenProj()  # добавление в ямл новых штук
-        # flnmp = askopenfilename(initialdir=self._bd['home'], title="Выберите файл проекта",
-        #                         filetypes=[('Файл проекта', '.prj')])
-        flnmp = r'C:\work\test\TEST.PRJ'
+        flnmp = askopenfilename(initialdir=self._bd['home'], title="Выберите файл проекта",
+                                filetypes=[('Файл проекта', '.prj')])
+        # flnmp = r'C:\work\test\TEST.PRJ'
 
         print(('file {0}'.format(flnmp)))
         if len(flnmp) > 2:
@@ -291,7 +291,7 @@ class Example(Frame):
             self._bd['rmp'] = os.path.normpath(os.path.join(dr_prj, nm_ltb))
             # print(self._bd['rmp'])
             ##            dr_tab = os.path.join(dr_prj, 'pechs\\materials')
-            try:
+            try: # Изменения Заложный Н.В.
                 if os.path.exists(os.path.join(dr_prj, 'pechs')):
                     if not os.path.exists(os.path.join(dr_prj, 'pechs\materials')):
                         os.mkdir(os.path.join(dr_prj, 'pechs\materials'))
@@ -324,7 +324,13 @@ class Example(Frame):
             ##            xxmkdir(dr_lay)
 
             ft = os.path.join(self._bd['lay'], 'layers')
-            shutil.copyfile(self._bd['rmp'], ft)
+            layers = self.lay_decoder(os.path.join(dr_prj,nm_lay))
+            # shutil.copyfile(self._bd['rmp'], ft)
+
+            with open(ft,'w',encoding='utf-8') as file:
+                for i in range(len(layers)):
+                    file.write(f'{layers[i][0]}\t{layers[i][1]} {layers[i][2]}\n')
+
             self._bd['lay'] = ft
             # print(self._bd)
             self._bfe['state'] = NORMAL
@@ -335,6 +341,66 @@ class Example(Frame):
             ##            self._fllay.set(self._bd['lay'])
             ##            self._flcfg.set(self._bd['cfg'])
             self.onEditLayPech()  # запуск окна с выбором мат файлов. до него работа с путями, активация кнопок
+
+    def lay_decoder(self,path):
+        #### .LAY DECODER
+        decoding_def = locale.getpreferredencoding()
+        decoding = 'utf-8'
+
+        try:
+            with open(rf'{path}', 'r', encoding=f'{decoding}') as file:
+                lines = file.readlines()
+        except UnicodeDecodeError:
+
+            with open(rf'{path}', 'r', encoding=f'{decoding_def}') as file:
+                lines = file.readlines()
+
+        try:
+
+            line = 2  # <Количество слоев> + 1 строка
+            lay_numeric = int(lines[line])
+            out_lay = []
+            # print(f'<Количество слоев> + 1 строка     {lines[line]}')
+
+            line += 2  # <Номер, название слоя>
+            # print(f'<Номер, название слоя>     {lines[line]}')
+
+            for layer in range(lay_numeric):
+                local = []
+                line += 1  # <Номер, название слоя> + 1 строка
+                # print(f'<Номер, название слоя> + 1 строка     {lines[line]}')
+                local.append(lines[line].split()[0])  # 0 - номер слоя
+                local.append(lines[line].split()[-1])  # 1 - название слоя
+
+                line += 2  # <газ(0)/не газ(1), и тд + 1 строка
+
+                extended = False
+                if int(lines[line].split()[-1]) == 1:
+                    extended = True
+
+                line += 2  # <давление в слое(атм.), плотн.(г/см3), + 1 строка
+                local.append(lines[line].split()[1])  # 2 - плотность
+
+                if extended is False:
+                    line += 2  # следущая частица    <Номер, название слоя>
+                elif extended is True:
+                    line += 2  # <молекулярный вес[г/моль] + 1 строка
+
+                    line += 2  # следущая частица    <Номер, название слоя>
+                out_lay.append(local)
+
+            # # sgs convert to si
+            #
+            # for i in range(len(out_lay)):
+            #     density = eval(out_lay[i][2])
+            #     density *= 1000
+            #     out_lay[i][2] = f'{density}'
+
+            return out_lay
+
+        except Exception:
+            print('Ошибка в чтении файла .LAY')
+            return
 
     def onElPhoto(self):
         dp = self._bd.copy()

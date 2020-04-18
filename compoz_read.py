@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
-#-------------------------------------------------------------------------------
+# !/usr/bin/env python
+# -------------------------------------------------------------------------------
 # Name:        module1
 # Purpose:
 #
@@ -9,16 +9,17 @@
 # Created:     13.12.2018
 # Copyright:   (c) PC 2018
 # Licence:     <your licence>
-#-------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
 
 import os
 import sys
 import yaml
 import numpy as np
 
+
 def read_elements(ss):
-    with open(os.path.join(ss, 'elements.csv'),'rt') as xfl:
-        be={}
+    with open(os.path.join(ss, 'elements.csv'), 'rt') as xfl:
+        be = {}
         xfl.readline()
         for line in xfl:
             t = line.split()
@@ -26,8 +27,7 @@ def read_elements(ss):
     sn = {}
     for k in list(be.keys()):
         sn[be[k][0]] = int(k)
-    return  (be, sn)
-
+    return (be, sn)
 
 
 def read_comp(file_name, el_name):
@@ -36,49 +36,48 @@ def read_comp(file_name, el_name):
 
     dm = {}
     try:
-        ff =  yaml.load(open(file_name))
+        ff = yaml.load(open(file_name))
     except IOError:
         print(('{0} не существует'.format(file_name)))
         exit(2)
-##    for ky in sorted(ff.keys()):
-##        ne_ = len(ff[ky]['elem'])
-##        em = []
-##        for el in range(ne_):
-##            lem = ff[ky]['elem'][el]
-##            em.append({'el':lem[0], 'A':'{:03d}'.format(lem[1]), 'p':lem[2]})
-##        ns_ = len(ff[ky]['slice'])
+        ##    for ky in sorted(ff.keys()):
+        ##        ne_ = len(ff[ky]['elem'])
+        ##        em = []
+        ##        for el in range(ne_):
+        ##            lem = ff[ky]['elem'][el]
+        ##            em.append({'el':lem[0], 'A':'{:03d}'.format(lem[1]), 'p':lem[2]})
+        ##        ns_ = len(ff[ky]['slice'])
         ls = []
-##        for sl in range(ns_):
-##            nmsl = ff[ky]['slice'][sl]
-##            ls.append(nmsl)
-        dm[ky] = {'elem':em, 'slice':ls}
+        ##        for sl in range(ns_):
+        ##            nmsl = ff[ky]['slice'][sl]
+        ##            ls.append(nmsl)
+        dm[ky] = {'elem': em, 'slice': ls}
 
     return ff
-
 
 
 def read_comp(file_name):
     """
     """
 
-##    dm = {}
+    ##    dm = {}
     try:
-        ff =  yaml.load(open(file_name))
+        ff = yaml.load(open(file_name))
     except IOError:
         print(('{0} не существует'.format(file_name)))
         exit(2)
-##    for ky in sorted(ff.keys()):
-##        ne_ = len(ff[ky]['elem'])
-##        em = []
-##        for el in range(ne_):
-##            lem = ff[ky]['elem'][el]
-##            em.append({'el':lem[0], 'A':'{:03d}'.format(lem[1]), 'p':lem[2]})
-##        ns_ = len(ff[ky]['slice'])
-##        ls = []
-##        for sl in range(ns_):
-##            nmsl = ff[ky]['slice'][sl]
-##            ls.append(nmsl)
-##        dm[ky] = {'elem':em, 'slice':ls}
+    ##    for ky in sorted(ff.keys()):
+    ##        ne_ = len(ff[ky]['elem'])
+    ##        em = []
+    ##        for el in range(ne_):
+    ##            lem = ff[ky]['elem'][el]
+    ##            em.append({'el':lem[0], 'A':'{:03d}'.format(lem[1]), 'p':lem[2]})
+    ##        ns_ = len(ff[ky]['slice'])
+    ##        ls = []
+    ##        for sl in range(ns_):
+    ##            nmsl = ff[ky]['slice'][sl]
+    ##            ls.append(nmsl)
+    ##        dm[ky] = {'elem':em, 'slice':ls}
 
     return ff
 
@@ -88,7 +87,7 @@ def read_mat(nFile, mess={}):
     em = []
     mp = 0.0
     try:
-        with open(nFile,'rt') as fIn:
+        with open(nFile, 'rt') as fIn:
             for line in fIn:
                 if len(line) < 5:
                     break
@@ -104,15 +103,16 @@ def read_mat(nFile, mess={}):
                     ro = float(tt[1])
                 else:
                     break
-            vt = {name:{'elem': em, 'ro': ro}}
+            vt = {name: {'elem': em, 'ro': ro}}
             if abs(1.0 - mp) > 1.e-4:
-               mess['mes'] = 'Неверно заданы массовые доли композита {0}. Сумма равна {1}'.format(name, mp)
-               mess['sum'] = mp
+                mess['mes'] = 'Неверно заданы массовые доли композита {0}. Сумма равна {1}'.format(name, mp)
+                mess['sum'] = mp
     except IOError:
         mess['mes'] = 'Oтсутствует файл c описанием композита - {0}. '.format(nFile)
 
-##    print('point 1')
+    ##    print('point 1')
     return vt
+
 
 def dump_mat(vt):
     """
@@ -122,13 +122,12 @@ def dump_mat(vt):
     ss += 'Наименование: ' + name + '\n'
     tv = vt[name]
     ro = str(tv['ro'])
-    ss +=  'Плотность: ' + ro + '\n'
-    ss +=  'Элементы:' + '\n'
+    ss += 'Плотность: ' + ro + '\n'
+    ss += 'Элементы:' + '\n'
     for nm, pp in tv['elem']:
         ss += '' + nm + ' - ' + str(pp) + '\n'
 
     return ss
-
 
 
 ## Класс для работы с входной информацией о композитах
@@ -138,63 +137,61 @@ class Compozit():
 
     ## Программа дла считывания информации о композитах
     def __init__(self, nFile, nmEl):
-        self._vv=[]
+        self._vv = []
 
-        i=-1
-        env=''
-##        vt_={}
+        i = -1
+        env = ''
+        ##        vt_={}
         try:
-            with open(nFile,'r') as fIn:
-                for k,line in enumerate(fIn):
-                    if line.startswith('['+'Composite'+']'):
-                        if i>-1:
-                            vt_={ip:{"Composite":env,"Density":Ro,"Element":Mt,"Shell":Sh}}
+            with open(nFile, 'r') as fIn:
+                for k, line in enumerate(fIn):
+                    if line.startswith('[' + 'Composite' + ']'):
+                        if i > -1:
+                            vt_ = {ip: {"Composite": env, "Density": Ro, "Element": Mt, "Shell": Sh}}
                             self._vv.append(vt_)
 
-                        i+=1
-                        vt_={}
-                        Mt=[]
-                        Sh=[]
-                        t=line.split()
-                        env=t[1]
-                        ip=i
-                        ss_=0
-    ##                    self.vv[env]=i
-                    elif line.startswith('['+'Element'+']'):
+                        i += 1
+                        vt_ = {}
+                        Mt = []
+                        Sh = []
+                        t = line.split()
+                        env = t[1]
+                        ip = i
+                        ss_ = 0
+                    ##                    self.vv[env]=i
+                    elif line.startswith('[' + 'Element' + ']'):
                         t = line.split()
                         if t[1] in list(nmEl.keys()):
                             vs_ = float(t[2])
                             ss_ += vs_
-                            Mt.append([t[1],vs_])
+                            Mt.append([t[1], vs_])
                         else:
                             print(('В композите  %s - элемент %s ошибочен.' % (env, t[1])))
                             exit(3)
-                    elif line.startswith('['+'Shell'+']'):
+                    elif line.startswith('[' + 'Shell' + ']'):
                         t = line.split()
-                        Sh.append((int(t[1]),ip,t[2]))
-                    elif line.startswith('['+'Density'+']'):
+                        Sh.append((int(t[1]), ip, t[2]))
+                    elif line.startswith('[' + 'Density' + ']'):
                         t = line.split()
-                        Ro=float(t[1])
-                    elif line.startswith('['+'OUtfile'+']'):
+                        Ro = float(t[1])
+                    elif line.startswith('[' + 'OUtfile' + ']'):
                         t = line.split()
-                        self.OutName=(t[1])
-                vt_ = {ip:{"Composite":env,"Density":Ro,"Element":Mt,"Shell":Sh}}
+                        self.OutName = (t[1])
+                vt_ = {ip: {"Composite": env, "Density": Ro, "Element": Mt, "Shell": Sh}}
                 self._vv.append(vt_)
-                for k,mt in enumerate(self._vv):
+                for k, mt in enumerate(self._vv):
                     vv_ = mt[k]['Element']
                     ss_ = 0
-                    for l,ve_ in enumerate(vv_):
-                        ss_+=ve_[1]
-                    if abs(1.0-ss_)>1.e-4:
-                        print(('Неверно заданы массовые доли композита {0}. Сумма равна {1}'.format(mt[k]['Composite'], ss_)))
+                    for l, ve_ in enumerate(vv_):
+                        ss_ += ve_[1]
+                    if abs(1.0 - ss_) > 1.e-4:
+                        print(('Неверно заданы массовые доли композита {0}. Сумма равна {1}'.format(mt[k]['Composite'],
+                                                                                                    ss_)))
         except IOError:
             print(('Oтсутствует файл c описанием композита - {0}. '.format(nFile)))
             exit(2)
 
     pass
-
-
-
 
     def conver(self):
         cp = {}
@@ -206,13 +203,12 @@ class Compozit():
         return cp
 
     def write_file_yaml(self, nfl):
-        with open(nfl,'w') as ff:
+        with open(nfl, 'w') as ff:
             ff.write(yaml.dump(self.conver()))
-
 
     def write_file(self, nfl):
         comp = self.conver()
-        with open(nfl,'w') as ff:
+        with open(nfl, 'w') as ff:
             for cp in sorted(comp.keys()):
                 ff.write('[Composite]\t%s\n' % cp)
                 for el in comp[cp]['elem']:
@@ -222,13 +218,13 @@ class Compozit():
 
 
 def write_file_yaml(nfl, dmt):
-    with open(nfl,'w') as ff:
+    with open(nfl, 'w') as ff:
         ff.write(yaml.dump(dmt))
 
 
 def write_file(nfl, comp):
-##    comp = self.conver()
-    with open(nfl,'w') as ff:
+    ##    comp = self.conver()
+    with open(nfl, 'w') as ff:
         for cp in sorted(comp.keys()):
             ff.write('[Composite]\t%s\n' % cp)
             for el in comp[cp]['elem']:
@@ -236,25 +232,22 @@ def write_file(nfl, comp):
             ff.write('[Density]\t%f\n' % comp[cp]['ro'])
 
 
-
-
-
 def read_layer(ss, nmfl='layers', save=False):
     """
     """
     from collections import defaultdict
-##    nmfl = 'layers'
+    ##    nmfl = 'layers'
     nf = os.path.join(ss, nmfl)
     if len(nmfl) == 0:
         nf = ss
     try:
         with open(nf) as ff:
-           lfn = ff.readlines()
+            lfn = ff.readlines()
     except IOError:
         print(("такого файла наверное нет.\n%s" % nf))
         return {}
-##        exit(-1)
-    nl =[]
+    ##        exit(-1)
+    nl = []
     nv = []
     rv = []
     for lr in lfn:
@@ -280,8 +273,8 @@ def read_layer(ss, nmfl='layers', save=False):
         nl = os.path.splitext(tt[1])[0]
         print(nl)
         fn = os.path.join(tt[0], nl + '.yml')
-        with open(fn,'w') as ff:
-            ff.write(yaml.dump(dict(d), default_flow_style = False,))
+        with open(fn, 'w') as ff:
+            ff.write(yaml.dump(dict(d), default_flow_style=False, ))
 
     return d
 
@@ -289,10 +282,10 @@ def read_layer(ss, nmfl='layers', save=False):
 def main():
     pass
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     sd = os.getcwd()
-##    tb = read_comp(os.path.join(sd, 'amg.yml'))
+    ##    tb = read_comp(os.path.join(sd, 'amg.yml'))
     bb = {'sum': '___'}
     tt = read_mat(os.path.join(sd, 'mat_files', 'composite.mrat'), mess=bb)
     s = dump_mat(tt)
@@ -301,7 +294,7 @@ if __name__ == '__main__':
     dd = read_layer(sd)
 
     print(dd)
-    dnb, snb =  read_elements(sd)
+    dnb, snb = read_elements(sd)
     cmt = Compozit(os.path.join(sd, 'compozits'), snb)
     cmt.write_file(os.path.join(sd, 'compa'))
     exit(0)
