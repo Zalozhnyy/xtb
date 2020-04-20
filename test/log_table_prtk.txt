@@ -1,7 +1,0 @@
-Ro = 1.0; Ro normal = 0.0012; Kff = 833.3333333333334; 
- _ATT_AIR => _ATT_000 
- _EXC_AIR => _EXC_000 
- _ION_AIR => _ION_000 
- _REC_AIR => _REC_000 
- _ROT_AIR => _ROT_000 
-For air Density = 1.0 [0]
