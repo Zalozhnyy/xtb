@@ -291,7 +291,8 @@ class Example(Frame):
             self._bd['rmp'] = os.path.normpath(os.path.join(dr_prj, nm_ltb))
             # print(self._bd['rmp'])
             ##            dr_tab = os.path.join(dr_prj, 'pechs\\materials')
-            try: # Изменения Заложный Н.В.
+            # Изменения Заложный Н.В.
+            try:
                 if os.path.exists(os.path.join(dr_prj, 'pechs')):
                     if not os.path.exists(os.path.join(dr_prj, 'pechs\materials')):
                         os.mkdir(os.path.join(dr_prj, 'pechs\materials'))
@@ -299,20 +300,26 @@ class Example(Frame):
                 else:
                     raise Exception
             except Exception:
-                if os.path.exists(os.path.join(dr_prj, 'pechs.proj.addr')):
-                    file = os.path.exists(os.path.join(dr_prj, 'pechs.proj.addr'))
-                    with open(file, 'r', encoding='utf-8') as f:
-                        lines = f.readlines()
-                    pech_name = lines[0].strip()
-                    if not os.path.exists(os.path.join(dr_prj, f'{pech_name}\materials')):
-                        os.mkdir(os.path.join(dr_prj, f'{pech_name}\materials'))
-                    pech_name = pech_name + '/materials'
-                    dr_tab = os.path.join(dr_prj, pech_name)
-                else:
+                try:
+                    if os.path.exists(os.path.join(dr_prj, 'pechs.proj.addr')):
+                        file = os.path.join(dr_prj, 'pechs.proj.addr')
+                        with open(file, 'r',encoding='utf-8') as f:
+                            lines = f.readlines()
+                        pech_name = lines[0].strip()
+                        if not os.path.exists(os.path.join(dr_prj, f'{pech_name}')):
+                            raise Exception
+                        if not os.path.exists(os.path.join(dr_prj, f'{pech_name}\materials')):
+                            os.mkdir(os.path.join(dr_prj, f'{pech_name}\materials'))
+                        pech_name = pech_name + '/materials'
+                        dr_tab = os.path.join(dr_prj, pech_name)
+                except Exception:
                     messagebox.showerror('Path error', 'Не обнаружена папка pechs/файл конфигурации.\n'
                                                        'Выберите директорию pech вручную')
                     dr_tab = fd.askdirectory(title='Выберите директорию pech',
                                              initialdir=dr_prj)
+                    if dr_tab == '':
+                        print('Папка pechs не указана. Остановка программы')
+                        return
                     if not os.path.exists(os.path.join(dr_tab, f'materials')):
                         os.mkdir(os.path.join(dr_tab, f'materials'))
                     dr_tab = os.path.join(dr_tab, f'materials')
