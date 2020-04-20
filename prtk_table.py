@@ -232,7 +232,7 @@ def main(dp):
         for key in dicts.keys():
             if dicts.get(key)[0] == 1:
                 exist_dict.update({key: dicts.get(key)})
-    print(exist_dict)
+    # print(exist_dict)
     ##    mat_fl_ = dp['mf']
     ##    nm_comp_ = get_list_material(mat_fl_)
 

@@ -80,7 +80,7 @@ def info(title):
 
 def xrun(modname, args):
     ##    print(modname)                     # run in a new process
-    info(modname)
+    # info(modname)
     module = __import__(modname)  # build gui from scratch
     module.main(args)
 
@@ -196,7 +196,7 @@ class Example(Frame):
         self._btpr.grid(row=rw, column=0, padx=5, pady=5, sticky=W + E)
         rw += 1
 
-        self._btpr1 = Button(frame_plc, text='Добавочные распределния для РЭМП', fg='#55A', justify=RIGHT,
+        self._btpr1 = Button(frame_plc, text='Распределение для РЭМП в воздухе', fg='#55A', justify=RIGHT,
                              font=("Times", "14", "bold"),
                              state=self._stbt, command=self.onCalcRmp1)
         self._btpr1['state'] = DISABLED
@@ -273,7 +273,7 @@ class Example(Frame):
             nm_lay = read_prj(flnmp)
             # print(nm_lay)
             nm_ltb = nm_lay.split('.')[0] + '.LTB'
-            print(('Файл с описанием оболочек {}'.format(nm_ltb)))
+            print(('Файл с описанием оболочек {}'.format(nm_lay)))
             dr_prj = os.path.dirname(os.path.normpath(flnmp))
             dr_path = os.path.split(dr_prj)[0]
             # fl_path = os.path.join(dr_path, 'path.config')

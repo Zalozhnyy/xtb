@@ -244,7 +244,7 @@ def main(dp):
         for key in dicts.keys():
             if dicts.get(key)[0] == 1:
                 exist_dict.update({key: dicts.get(key)})
-    print(exist_dict)
+    # print(exist_dict)
 
     for mat_, ro in list(dly.keys()):
         mt = mat_.upper()
