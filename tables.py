@@ -10,6 +10,11 @@
 # Copyright:   (c) Сергей 2018
 # Licence:     <your licence>
 # -------------------------------------------------------------------------------
+import sys
+import os
+
+sys.path.append(os.path.dirname(__file__))
+#__file__ = os.path.join('..//share//scripts//xtb//', 'tables.py')
 
 import os
 import json
