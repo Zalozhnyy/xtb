@@ -230,7 +230,7 @@ def main(dp):
     exist_dict = {}
     for dicts in part_list:
         for key in dicts.keys():
-            if dicts.get(key)[0] == 1:
+            if dicts.get(key)[0] == 1 or dicts.get(key)[0] == 2:
                 exist_dict.update({key: dicts.get(key)})
     # print(exist_dict)
     ##    mat_fl_ = dp['mf']

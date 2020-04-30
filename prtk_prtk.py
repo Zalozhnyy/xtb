@@ -195,7 +195,7 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
         ie = '{0:03d}'.format(i)
         for pp in prc:
             if f'_{pp}_' in exist_list.keys():
-                if exist_list.get(f'_{pp}_')[0] == 1:
+                if exist_list.get(f'_{pp}_')[0] != 0:
                     f_old = '_' + pp + '_' + mt
                     fsp = os.path.join(fs, f_old)
                     ls = prt[pp](fsp, kf)
@@ -242,7 +242,7 @@ def main(dp):
     exist_dict = {}
     for dicts in part_list:
         for key in dicts.keys():
-            if dicts.get(key)[0] == 1:
+            if dicts.get(key)[0] == 1 or dicts.get(key)[0] == 2:
                 exist_dict.update({key: dicts.get(key)})
     # print(exist_dict)
 

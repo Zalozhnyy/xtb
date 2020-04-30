@@ -15,7 +15,7 @@ import os
 ##import numpy as np
 import glob
 import yaml
-from multiprocessing import Process
+from multiprocessing.dummy import Process
 from  sys import version_info
 
 v = version_info[0]

@@ -12,7 +12,7 @@ import math
 import numpy as np
 import yaml
 
-from multiprocessing import Process
+from multiprocessing.dummy import Process
 
 import kiadf.phisconst as phis
 import kiadf.interface as xItf

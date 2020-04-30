@@ -1,25 +1,10 @@
-# import collections
-#
-# Val = collections.namedtuple('Val', 'capacity flux inductivity')
-# print(Val)
-# val = Val(capacity=20, flux=30, inductivity=0)
-# print(val)
-# val._asdict()
-#
-# print(getattr(val,'capacity'))
+a =1
 
-import yaml
+if a == 2:
+    print(2)
 
-x = """
-electron: True
-proton: 
-        low_en: 1
-        hight_en: 2
-pozitron:
-        a: 1
-        b: 2
-"""
+elif a == 3:
+    print(3)
 
-
-files = yaml.load(x)
-print(files['proton'])
+else:
+    print(a)

@@ -56,27 +56,33 @@ class DataParcer:
 
             part = self.particle()
 
-            if int(lines[string_num + 1].split()[3]) == 1:
+            string_num += 1  # <Номер, заряд(эл.), масса(г), самосогл.(0-нет,1-да) + 1 str
+
+            if int(lines[string_num].split()[4]) == 1:
                 part.append_dict(key='FBB_E_', value=[1])
-            if int(lines[string_num + 1].split()[3]) == 2:
+            if int(lines[string_num].split()[4]) == 2:
                 part.append_dict(key='FBB_P_', value=[2])
 
-            L.append(int(lines[string_num + 1].split()[0]))
-            string_num += 4  # <Количество процессов>
-            start = string_num + 3
-            string_num += 2 * int(lines[string_num + 1].strip()) + 1  # пропуск
-            end = string_num
+            # L.append(int(lines[string_num].split()[0]))
+            string_num += 3  # <Количество процессов>
+            string_num += 1  # <Количество процессов> + 2 str
+
+            end = string_num + int(lines[string_num]) * 2
+            string_num += 1  # <Номер процесса, процесс(0-нет,1-есть)
+            start = string_num + 1
 
             for i in range(start, end + 1, 2):
                 key = self.decode_dictionary.get(int(lines[i].split()[0]))
                 value = list(map(int, lines[i].split()[1:]))
                 part.append_dict(key=key, value=value)
 
+            string_num = end
+
             self.dict_list.append(part.dict_return())
             string_num += 4  # переход к следующему кластеру (последняя строка с цифрами в процессах)
 
         return self.dict_list
 
-
-# if __name__ == '__main__':
-#     x = DataParcer(r'C:\Users\Никита\Dropbox\work_cloud\xtb\KUVSH.PAR').par_decoder()
+if __name__ == '__main__':
+    x = DataParcer(r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PAR').par_decoder()
+    print(x)

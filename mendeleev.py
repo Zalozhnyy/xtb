@@ -96,13 +96,13 @@ def z2rc(Z_):
 
     """   """
 
-def tblMendel( n):
+def tblMendel(frame,  n):
 
     dmt = read_elements()[0]
     lb = []
     for k in range(1,n):
         i,j=z2rc(k)
-        b = Button(root, text=str(k) + ':' + dmt[k]['name'], relief=RIDGE,command=(lambda k=k:elem(k)))
+        b = Button(frame, text=str(k) + ':' + dmt[k]['name'], relief=RIDGE,command=(lambda k=k:elem(k)))
         b.grid(row=i, column=j, sticky=NSEW)
 ##            b.bind("<Button-1>", callback)
         lb.append(b)
@@ -111,8 +111,10 @@ def tblMendel( n):
 def main():
     """   """
     a = Toplevel()
-    tblMendel( 100)
+    tblMendel(a, 100)
     mainloop()
+    a.quit()
+    #a.destroy()
 
 if __name__ == '__main__':
 ##    for i in range(1,114):

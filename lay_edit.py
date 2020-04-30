@@ -15,7 +15,7 @@ import os
 ##import numpy as np
 import glob
 import yaml
-from multiprocessing import Process
+from multiprocessing.dummy import Process
 from sys import version_info
 
 from tkinter import *
@@ -52,6 +52,7 @@ class Example(Frame):
     def __init__(self, parent, db):
         Frame.__init__(self, parent)
         self.parent = parent
+        self.focus_set()
         self.parent.protocol("WM_DELETE_WINDOW", self.onExit)
         self._n = cfg.val.nrlay
         self._mat = '.' + cfg.val.extmat
@@ -67,9 +68,9 @@ class Example(Frame):
         self._exist_mat = [False for id in range(self._n)]
         self._evp = [' ' for id in range(self._n)]
         self._rom = [' ' for id in range(self._n)]
-        self._var = [StringVar() for id in range(self._n)]
-        self._pv = [StringVar() for id in range(self._n)]
-        self._ro = [StringVar() for id in range(self._n)]
+        self._var = [StringVar(master=parent) for id in range(self._n)]
+        self._pv = [StringVar(master=parent) for id in range(self._n)]
+        self._ro = [StringVar(master=parent) for id in range(self._n)]
 
         self.initUI()
 
@@ -114,11 +115,11 @@ class Example(Frame):
             self._nmat[i].grid(row=i + 1, column=0, padx=1, pady=1, sticky=W + E)
 
             self._rom[i] = Entry(self.parent, textvariable=self._ro[i], relief=SUNKEN,
-                                 borderwidth=3, justify=RIGHT, width=5, state='disabled')
+                                 borderwidth=3, justify=RIGHT, width=5, state='readonly')
             self._rom[i].grid(row=i + 1, column=1, padx=1, pady=1, sticky=W + E)
             ##            self._pv[i].set([])
             self._evp[i] = Entry(self.parent, textvariable=self._pv[i], relief=GROOVE,
-                                 borderwidth=3, justify=RIGHT, width=45)
+                                 borderwidth=3, justify=RIGHT, width=9, state='readonly')
             self._evp[i].grid(row=i + 1, column=2, padx=1, pady=1, sticky=W + E)
         pass
 
@@ -159,8 +160,9 @@ class Example(Frame):
             else:
                 self._nmat[i]['fg'] = '#800'
 
-            self._ro[i].set(ky[1])
-            self._pv[i].set(d[ky])
+            self._ro[i].set(str(ky[1]))
+            # a = [''.join(str(i)) for i in d[ky]]
+            self._pv[i].set(str(d[ky]))
             ##             print(self._nmat[i]['text'])
             self._nmat[i]['text'] = self._var[i].get()
         pass
@@ -235,7 +237,7 @@ class Example(Frame):
             if check == 0:
                 self.parent.destroy()
             else:
-                ask = askyesno('Mat files','Мат файлы не выбраны.\nВыбрать мат файлы?\n нет - программа будет закрыта')
+                ask = askyesno('Mat files', 'Мат файлы не выбраны.\nВыбрать мат файлы?\n нет - программа будет закрыта')
                 if ask is True:
                     return
                 else:
@@ -250,7 +252,7 @@ class Example(Frame):
             if len(self._ro[i].get()) == 0 or self._nmat[i]['text'] == '_':
                 continue
             if self._exist_mat[i] is False:
-                showerror('Mat error','Выбраны не все мат файлы')
+                showerror('Mat error', 'Выбраны не все мат файлы')
                 return 1
             ro = float(self._ro[i].get())
             if ro > 0.0:

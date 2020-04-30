@@ -14,7 +14,7 @@ import sys
 import os
 
 sys.path.append(os.path.dirname(__file__))
-#__file__ = os.path.join('..//share//scripts//xtb//', 'tables.py')
+# __file__ = os.path.join('..//share//scripts//xtb//', 'tables.py')
 
 import os
 import json
@@ -22,7 +22,9 @@ import json
 import shutil
 import yaml
 
-from multiprocessing import Process
+from multiprocessing import set_executable
+from multiprocessing.dummy import Process
+# from multiprocessing import Process
 import logging
 
 from sys import version_info
@@ -73,6 +75,51 @@ def xxmkdir(drname):
     print(os.getcwd())
     if not os.path.isdir(os.path.join(os.getcwd(), dirname)):
         os.makedirs(os.path.join(os.getcwd(), dirname))
+
+
+def pech_open_dir(path):
+    messagebox.showwarning('Path error', 'Не обнаружена папка проекта pechs.\n'
+                                         'Выберите директорию pechs вручную')
+    pech_path = fd.askdirectory(title='Выберите директорию pechs',
+                                initialdir=path)
+    if pech_path == '':
+        return -1
+    if 'configuration' in os.listdir(pech_path):
+        return os.path.abspath(pech_path)
+    else:
+        messagebox.showwarning('Path error', 'Не обнаружен файл configuration.\n'
+                                             'Папка не является проектом pechs')
+        return -1
+
+
+def pech_existance(pr_path):
+    path = os.path.abspath(pr_path)
+    if any([i == 'pechs' for i in os.listdir(path)]):
+        if 'configuration' in os.listdir(os.path.join(path, 'pechs')):
+            return os.path.join(path, 'pechs')
+
+    elif 'pechs.proj.addr' in os.listdir(path):
+        file = os.path.join(pr_path, 'pechs.proj.addr')
+
+        try:
+            with open(file, 'r', encoding='utf-8') as f:
+                lines = f.readlines()
+        except UnicodeDecodeError:
+            with open(file, 'r', encoding=f'{locale.getpreferredencoding()}') as f:
+                lines = f.readlines()
+
+        pech_name = lines[0].strip()
+        if os.path.exists(os.path.join(pr_path, pech_name)):
+            if os.path.exists(os.path.join(os.path.join(pr_path, pech_name), 'configuration')):
+                return os.path.join(pr_path, pech_name)
+            else:
+                pech_dir = pech_open_dir(path)
+                if pech_dir == -1:
+                    return -1
+    else:
+        pech_dir = pech_open_dir(path)
+        if pech_dir == -1:
+            return -1
 
 
 def info(title):
@@ -256,7 +303,7 @@ class Example(Frame):
         nm_ltb = nm_lay.split('.')[0] + '.LTB'
         dr_prj = os.path.dirname(os.path.normpath(flnmp))
         self._bd['proj'] = dr_prj
-        self._bd['rmp'] = os.path.normpath(os.path.normpath(dr_prj, nm_ltb))
+        self._bd['rmp'] = os.path.normpath(os.path.join(dr_prj, nm_ltb))
         ##            print(ltb)
         dr_tab = os.path.join(dr_prj, 'pechs\\materials')
         xxmkdir(dr_tab)
@@ -277,9 +324,12 @@ class Example(Frame):
             self._parent.title('Новый проект')
             nm_lay = read_prj(flnmp)
             # print(nm_lay)
+
             nm_ltb = nm_lay.split('.')[0] + '.LTB'
             print(('Файл с описанием оболочек {}'.format(nm_lay)))
             dr_prj = os.path.dirname(os.path.normpath(flnmp))
+            layers = self.lay_decoder(os.path.join(dr_prj, nm_lay))
+
             dr_path = os.path.split(dr_prj)[0]
             # fl_path = os.path.join(dr_path, 'path.config')
             # try:
@@ -297,37 +347,15 @@ class Example(Frame):
             # print(self._bd['rmp'])
             ##            dr_tab = os.path.join(dr_prj, 'pechs\\materials')
             # Изменения Заложный Н.В.
-            try:
-                if os.path.exists(os.path.join(dr_prj, 'pechs')):
-                    if not os.path.exists(os.path.join(dr_prj, 'pechs\materials')):
-                        os.mkdir(os.path.join(dr_prj, 'pechs\materials'))
-                    dr_tab = os.path.join(dr_prj, 'pechs\materials')
-                else:
-                    raise Exception
-            except Exception:
-                try:
-                    if os.path.exists(os.path.join(dr_prj, 'pechs.proj.addr')):
-                        file = os.path.join(dr_prj, 'pechs.proj.addr')
-                        with open(file, 'r',encoding='utf-8') as f:
-                            lines = f.readlines()
-                        pech_name = lines[0].strip()
-                        if not os.path.exists(os.path.join(dr_prj, f'{pech_name}')):
-                            raise Exception
-                        if not os.path.exists(os.path.join(dr_prj, f'{pech_name}\materials')):
-                            os.mkdir(os.path.join(dr_prj, f'{pech_name}\materials'))
-                        pech_name = pech_name + '/materials'
-                        dr_tab = os.path.join(dr_prj, pech_name)
-                except Exception:
-                    messagebox.showerror('Path error', 'Не обнаружена папка pechs/файл конфигурации.\n'
-                                                       'Выберите директорию pech вручную')
-                    dr_tab = fd.askdirectory(title='Выберите директорию pech',
-                                             initialdir=dr_prj)
-                    if dr_tab == '':
-                        print('Папка pechs не указана. Остановка программы')
-                        return
-                    if not os.path.exists(os.path.join(dr_tab, f'materials')):
-                        os.mkdir(os.path.join(dr_tab, f'materials'))
-                    dr_tab = os.path.join(dr_tab, f'materials')
+
+            pech_path = pech_existance(dr_prj)
+            if pech_path == -1:
+                return
+
+            if not os.path.exists(os.path.join(pech_path, 'materials')):
+                os.mkdir(os.path.join(pech_path, 'materials'))
+
+            dr_tab = os.path.join(pech_path, 'materials')
 
             # xxmkdir(dr_tab)
             self._bd['tab'] = dr_tab
@@ -336,10 +364,10 @@ class Example(Frame):
             ##            xxmkdir(dr_lay)
 
             ft = os.path.join(self._bd['lay'], 'layers')
-            layers = self.lay_decoder(os.path.join(dr_prj,nm_lay))
+
             # shutil.copyfile(self._bd['rmp'], ft)
 
-            with open(ft,'w',encoding='utf-8') as file:
+            with open(ft, 'w', encoding='utf-8') as file:
                 for i in range(len(layers)):
                     file.write(f'{layers[i][0]}\t{layers[i][1]} {layers[i][2]}\n')
 
@@ -354,7 +382,7 @@ class Example(Frame):
             ##            self._flcfg.set(self._bd['cfg'])
             self.onEditLayPech()  # запуск окна с выбором мат файлов. до него работа с путями, активация кнопок
 
-    def lay_decoder(self,path):
+    def lay_decoder(self, path):
         #### .LAY DECODER
         decoding_def = locale.getpreferredencoding()
         decoding = 'utf-8'
@@ -454,6 +482,7 @@ class Example(Frame):
     def onExit(self):
         ##        self.onSave()
         self._parent.quit()
+        self._parent.destroy()
 
     def onEditMat(self):
         dp = {'mat': self._plc_mat.get()}
