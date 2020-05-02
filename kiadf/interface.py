@@ -144,9 +144,13 @@ class Object():
 
 
     ## Программа дла считывания информации о композитах
-    def __init__(self, nFile, nmEl, flnm):
+    def __init__(self, nFile, nmEl, flnm,layers):
         self.vv=[]
 
+        with open(layers,'r',encoding='utf-8') as file:
+            lay_ = file.readlines()
+
+        lay = [val.split() for val in lay_]
         i=-1
         env=''
 ##        vt_={}
@@ -181,8 +185,11 @@ class Object():
                         t=line.split()
                         Sh.append((int(t[1]),ip,t[2]))
                     elif line.startswith('['+'Density'+']'):
-                        t=line.split()
-                        Ro=float(t[1])
+                        for i in range(len(lay)):
+                            if lay[i][1] == env:
+                                Ro = float(lay[i][2])
+                        # t=line.split()
+                        # Ro=float(t[1])   # сюда надо вставлять правильную плотность
                     elif line.startswith('['+'OUtfile'+']'):
                         t=line.split()
                         self.OutName=(t[1])

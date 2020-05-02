@@ -83,6 +83,68 @@ class DataParcer:
 
         return self.dict_list
 
+    def lay_decoder(self):
+        #### .LAY DECODER
+        decoding_def = locale.getpreferredencoding()
+        decoding = 'utf-8'
+        path = self.path
+
+        try:
+            with open(rf'{path}', 'r', encoding=f'{decoding}') as file:
+                lines = file.readlines()
+        except UnicodeDecodeError:
+
+            with open(rf'{path}', 'r', encoding=f'{decoding_def}') as file:
+                lines = file.readlines()
+
+        try:
+
+            line = 2  # <Количество слоев> + 1 строка
+            lay_numeric = int(lines[line])
+            out_lay = []
+            # print(f'<Количество слоев> + 1 строка     {lines[line]}')
+
+            line += 2  # <Номер, название слоя>
+            # print(f'<Номер, название слоя>     {lines[line]}')
+
+            for layer in range(lay_numeric):
+                local = []
+                line += 1  # <Номер, название слоя> + 1 строка
+                # print(f'<Номер, название слоя> + 1 строка     {lines[line]}')
+                local.append(lines[line].split()[0])  # 0 - номер слоя
+                local.append(lines[line].split()[-1])  # 1 - название слоя
+
+                line += 2  # <газ(0)/не газ(1), и тд + 1 строка
+
+                extended = False
+                if int(lines[line].split()[-1]) == 1:
+                    extended = True
+
+                line += 2  # <давление в слое(атм.), плотн.(г/см3), + 1 строка
+                local.append(lines[line].split()[1])  # 2 - плотность
+
+                if extended is False:
+                    line += 2  # следущая частица    <Номер, название слоя>
+                elif extended is True:
+                    line += 2  # <молекулярный вес[г/моль] + 1 строка
+
+                    line += 2  # следущая частица    <Номер, название слоя>
+                out_lay.append(local)
+
+            # sgs convert to si
+
+            # for i in range(len(out_lay)):
+            #     density = eval(out_lay[i][2])
+            #     density *= 1000
+            #     out_lay[i][2] = f'{density}'
+
+            return out_lay
+
+        except Exception:
+            print('Ошибка в чтении файла .LAY')
+            return
+
 if __name__ == '__main__':
-    x = DataParcer(r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PAR').par_decoder()
+    # x = DataParcer(r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PAR').par_decoder()
+    x = DataParcer(r'C:\work\tzp_8\KUVSH.LAY').lay_decoder()
     print(x)

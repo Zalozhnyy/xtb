@@ -86,8 +86,9 @@ def main(db): #setk_, matfile):
     for matFie_ in matfile:
         print(("Обрабатывается файл - {0}".format(matFie_)))
         matFile=os.path.join(db['mat'], matFie_)
+        layers = os.path.abspath(db['lay'])
         ##    Считываем информацию о заданных композитах
-        Obt = xItf.Object(matFile, xI.sN, matFie_)
+        Obt = xItf.Object(matFile, xI.sN, matFie_,layers)
         ##    Сохраняем информацию о композитах и и оболочках
 ##        Obt.Ro2file(os.path.join(idir, 'ro.txt'))
 ##        Obt.Sh2file(os.path.join(idir, 'surfaces'))
