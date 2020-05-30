@@ -223,16 +223,10 @@ def main(dp):
     dlog = open(fllog, 'w')
     print(fllog)
 
-    k = 1
-
     par_dir = os.path.join(idir_, par_path(idir_))
     part_list = Project_reader.DataParcer(par_dir).par_decoder()
-    exist_dict = {}
-    for dicts in part_list:
-        for key in dicts.keys():
-            if dicts.get(key)[0] == 1 or dicts.get(key)[0] == 2:
-                exist_dict.update({key: dicts.get(key)})
-    # print(exist_dict)
+    move, io_brake = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+
     ##    mat_fl_ = dp['mf']
     ##    nm_comp_ = get_list_material(mat_fl_)
 
@@ -266,12 +260,25 @@ def main(dp):
         ttl_st_ = ttl_ - xer_[:, -1]
         vz_ = zip(E_, ttl_, ttl_st_)
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_dict.keys():
+        if np.any(io_brake[:, imat] == 1):
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
                 for v_ in vz_:
                     out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
             copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
+        exist_dict = {}
+        for i, part_dict in enumerate(part_list):
+            for key in part_dict.keys():
+                part_dict_vals = part_dict.values()
+                part_number = key
+
+            if move[int(part_number), imat] == 1:
+                for components in part_dict_vals:
+                    for item in components.items():
+                        if item[1][0] == 1:
+                            exist_dict.update({item[0]: item[1][0]})
+        print(exist_dict)
         # ---------------------------------------------------------------------------------
         key_ = '.ann'
         xt_ = cs_el_[:, -1]
@@ -295,7 +302,7 @@ def main(dp):
         ##        ttl_ = np.sum(xer_, axis=1)
         ##        ttl_st_ = ttl_ - xer_[:,-1]
         vz_ = zip(E_, cs_el_[:, 2], np.power(10, xer_[:, 1]) * 10 ** (-6))
-        ff_ = parot_[key_]['name_out']
+        ff_ = parot_[key_]['name_out']  # _EXC_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -319,7 +326,7 @@ def main(dp):
         ##        p_rr_[:, 1:] = np.power(10,p_rr_[:, 1:])-1
         ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
         vz_ = zip(E_, cs_el_[:, 0])
-        ff_ = parot_[key_]['name_out']
+        ff_ = parot_[key_]['name_out'] #_ELA_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -351,7 +358,7 @@ def main(dp):
             p_rr_[k_, :] = np.interp(gg_, gamma_, rr_[k_, :])
         p_rr_ = np.power(10, p_rr_) * 10 ** (-6)
         vz_ = zip(E_, cs_el_[:, 1])
-        ff_ = parot_[key_]['name_out']
+        ff_ = parot_[key_]['name_out']  # _BRM_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -375,7 +382,7 @@ def main(dp):
         eb_ph_, heap__ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.eb'))
         eb_ph_ = eb_ph_[:, -1] * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, -1], eb_ph_)
-        ff_ = parot_[key_]['name_out']
+        ff_ = parot_[key_]['name_out']  #_FOT_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -394,7 +401,7 @@ def main(dp):
         for k_ in range(nE_):
             p_ive_[k_, :] = np.interp(gg_, gamma_, ive_[k_, :]) * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, 2])
-        ff_ = parot_[key_]['name_out']
+        ff_ = parot_[key_]['name_out']  #_KOM_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -421,7 +428,7 @@ def main(dp):
         nE_ = sum(E_ > E2_) + 1
         p_rr_[i_rr_] = 0.0
         vz_ = zip(E_, cs_ph_[:, 3])
-        ff_ = parot_[key_]['name_out']
+        ff_ = parot_[key_]['name_out']  # _PAR_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -471,7 +478,7 @@ def main(dp):
         xeb_ = (E_ - eb_el_) / 2. * 10 ** (-6)
         p_rr_[:, -1] = xeb_
         vz_ = zip(E_, cs_el_[:, 3])
-        ff_ = parot_[key_]['name_out']
+        ff_ = parot_[key_]['name_out']  # _ION_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:

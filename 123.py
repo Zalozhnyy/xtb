@@ -1,10 +1,5 @@
-a =1
+import numpy as np
 
-if a == 2:
-    print(2)
+a = {1:2}
 
-elif a == 3:
-    print(3)
-
-else:
-    print(a)
+print(a.items().keys())

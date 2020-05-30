@@ -249,10 +249,10 @@ class Example(Frame):
 def main(db):
     ##    sd = os.getcwd()
     ##    (na, nu) = cor.read_elements(sd)
-    root = Tk()
+    root = Toplevel()
     ex = Example(root, db)
     ##    root.geometry("250x550+300+50")
-    root.mainloop()
+    #root.mainloop()
 
 
 if __name__ == '__main__':

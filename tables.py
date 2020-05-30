@@ -37,6 +37,8 @@ import tkinter.filedialog as fd
 from tkinter.simpledialog import askfloat
 from tkinter import messagebox
 
+from calc_tables import main as main_calc_tables
+
 ##from make_constant import make_const
 ##from calculate import monte_carlo
 ##from read_proj import read_prj
@@ -89,7 +91,26 @@ def pech_open_dir(path):
     else:
         messagebox.showwarning('Path error', 'Не обнаружен файл configuration.\n'
                                              'Папка не является проектом pechs')
-        return -1
+        ask = messagebox.askyesno('Выбрать другую папку?', 'Выбрать другую папку?')
+        if ask is True:
+            pech_open_dir(path)
+        elif ask is False:
+            return -1
+
+
+def pech_ask(path):
+    ask_pe = messagebox.askyesno('Проект pechs', 'В расчёте нужен проект pechs?.\n'
+                                                 'да - указать путь к проекту pechs\n'
+                                                 'нет - продолжить без проекта pechs')
+    if ask_pe is True:
+        pech_dir = pech_open_dir(path)
+        if pech_dir == -1:
+            return -1
+    elif ask_pe is False:
+        pech_dir = 'temp'
+        if not os.path.exists(os.path.join(path, 'temp')):
+            os.mkdir(os.path.join(path, 'temp'))
+        return pech_dir
 
 
 def pech_existance(pr_path):
@@ -113,13 +134,14 @@ def pech_existance(pr_path):
             if os.path.exists(os.path.join(os.path.join(pr_path, pech_name), 'configuration')):
                 return os.path.join(pr_path, pech_name)
             else:
-                pech_dir = pech_open_dir(path)
-                if pech_dir == -1:
-                    return -1
-    else:
-        pech_dir = pech_open_dir(path)
-        if pech_dir == -1:
-            return -1
+                pech_dir = pech_ask(path)
+                return os.path.join(pr_path, pech_dir)
+        else:
+            pech_dir = pech_ask(path)
+            return os.path.join(pr_path, pech_dir)
+    elif True:
+        pech_dir = pech_ask(path)
+        return os.path.join(pr_path, pech_dir)
 
 
 def info(title):
@@ -346,7 +368,6 @@ class Example(Frame):
             self._bd['rmp'] = os.path.normpath(os.path.join(dr_prj, nm_ltb))
             # print(self._bd['rmp'])
             ##            dr_tab = os.path.join(dr_prj, 'pechs\\materials')
-            # Изменения Заложный Н.В.
 
             pech_path = pech_existance(dr_prj)
             if pech_path == -1:
@@ -354,6 +375,8 @@ class Example(Frame):
 
             if not os.path.exists(os.path.join(pech_path, 'materials')):
                 os.mkdir(os.path.join(pech_path, 'materials'))
+            if not os.path.exists(os.path.join(pech_path, 'initials')):
+                os.mkdir(os.path.join(pech_path, 'initials'))
 
             dr_tab = os.path.join(pech_path, 'materials')
 
@@ -362,7 +385,6 @@ class Example(Frame):
             self._bd['lay'] = os.path.join(os.path.split(dr_tab)[0], 'initials')
             ##            dr_lay = os.path.join(dr_prj, 'pechs\\initials')
             ##            xxmkdir(dr_lay)
-
             ft = os.path.join(self._bd['lay'], 'layers')
 
             # shutil.copyfile(self._bd['rmp'], ft)
@@ -467,7 +489,9 @@ class Example(Frame):
         ##        self._bd['par'] = str(self._flpar.get())
         ##        self._bd['rmp'] = str(self._flrmp.get())
         dp = self._bd.copy()
-        Process(target=xrun, args=('calc_tables', dp)).start()
+        # Process(target=xrun, args=('calc_tables', dp)).start()
+        main_calc_tables(dp)
+        messagebox.showinfo('Информация', 'Модуль расчёта распределений закончил свою работу')
         self._btpr['state'] = NORMAL
         self._btpr1['state'] = NORMAL
 
@@ -625,7 +649,19 @@ class Example(Frame):
             self._bd['tab'] = str(self._plc_tab.get())
 
 
-def xdialog():
+# def xdialog():
+#     er = Tk()
+#     ##    er.overrideredirect(True)
+#     ex = Example(er)
+#     x = (er.winfo_screenwidth() - er.winfo_reqwidth()) / 3
+#     y = (er.winfo_screenheight() - er.winfo_reqheight()) / 3
+#     er.geometry("+%d+%d" % (x, y))
+#     er.mainloop()
+
+
+if __name__ == '__main__':
+    # xdialog()
+
     er = Tk()
     ##    er.overrideredirect(True)
     ex = Example(er)
@@ -633,7 +669,3 @@ def xdialog():
     y = (er.winfo_screenheight() - er.winfo_reqheight()) / 3
     er.geometry("+%d+%d" % (x, y))
     er.mainloop()
-
-
-if __name__ == '__main__':
-    xdialog()

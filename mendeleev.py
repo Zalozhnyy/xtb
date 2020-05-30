@@ -112,14 +112,14 @@ def main():
     """   """
     a = Toplevel()
     tblMendel(a, 100)
-    mainloop()
+    #mainloop()
     a.quit()
     #a.destroy()
 
 if __name__ == '__main__':
 ##    for i in range(1,114):
 ##        print(z2rc(i))
-    root = Tk()
+    root = Toplevel()
 ##    gridtable((root))
 ##    packbox(Toplevel(root))
 ##    Button(root, text=’Quit’, command=root.quit).pack()

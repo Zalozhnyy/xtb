@@ -28,6 +28,8 @@ import compoz_read as cord
 
 import cfg
 
+# from tables import ex as MW
+
 mat_dir = cfg.val.dirmat
 
 
@@ -242,8 +244,12 @@ class Example(Frame):
                     return
                 else:
                     self.parent.destroy()
+                    exit(1)
+                    return
         elif answer == False:
             self.parent.destroy()
+            exit(1)
+            return
 
     def onSave(self):
         """ """
@@ -383,12 +389,12 @@ class Example(Frame):
 def main(db):
     ##    sd = os.getcwd()
     ##    (na, nu) = cor.read_elements(sd)
-    er = Tk()
+    er = Toplevel()
     ex = Example(er, db)
     x = (er.winfo_screenwidth() - er.winfo_reqwidth()) / 2
     y = (er.winfo_screenheight() - er.winfo_reqheight()) / 4
     er.geometry("+%d+%d" % (x, y))
-    er.mainloop()
+    #er.mainloop()
 
 
 if __name__ == '__main__':

@@ -1,5 +1,6 @@
 import locale
 import os
+import numpy as np
 
 
 class Particle:
@@ -51,17 +52,18 @@ class DataParcer:
         L = []
         L.append(int(lines[2].strip()))
 
-        string_num = 6
-        for num in range(L[0]):
+        string_num = 4  # <Тип(0-неизвестен,1-электрон,2-позитрон,3-квант,4-протон,5-дейтрон,6-а/частица), Название>
+        string_num += 2  # <Номер, заряд(эл.), масса(г), самосогл.(0-нет,1-да), торм.(0-нет,1-эл.,2-пр.),
 
-            part = self.particle()
+        for num in range(L[0]):
+            part = {}
 
             string_num += 1  # <Номер, заряд(эл.), масса(г), самосогл.(0-нет,1-да) + 1 str
 
-            if int(lines[string_num].split()[4]) == 1:
-                part.append_dict(key='FBB_E_', value=[1])
-            if int(lines[string_num].split()[4]) == 2:
-                part.append_dict(key='FBB_P_', value=[2])
+            # if int(lines[string_num].split()[4]) == 1:
+            #     part.append_dict(key='FBB_E_', value=[1])
+            # if int(lines[string_num].split()[4]) == 2:
+            #     part.append_dict(key='FBB_P_', value=[2])
 
             # L.append(int(lines[string_num].split()[0]))
             string_num += 3  # <Количество процессов>
@@ -71,14 +73,16 @@ class DataParcer:
             string_num += 1  # <Номер процесса, процесс(0-нет,1-есть)
             start = string_num + 1
 
+            tmp = {}
             for i in range(start, end + 1, 2):
                 key = self.decode_dictionary.get(int(lines[i].split()[0]))
                 value = list(map(int, lines[i].split()[1:]))
-                part.append_dict(key=key, value=value)
+                tmp.update({key: value})
+            part.update({num: tmp})
 
             string_num = end
 
-            self.dict_list.append(part.dict_return())
+            self.dict_list.append(part)
             string_num += 4  # переход к следующему кластеру (последняя строка с цифрами в процессах)
 
         return self.dict_list
@@ -144,7 +148,73 @@ class DataParcer:
             print('Ошибка в чтении файла .LAY')
             return
 
+    def pl_decoder(self):
+        #### .PL DECODER
+        try:
+            with open(rf'{self.path}', 'r', encoding=f'{self.decoding}') as file:
+                lines_pl = file.readlines()
+        except UnicodeDecodeError:
+
+            with open(rf'{self.path}', 'r', encoding=f'{self.decoding_def}') as file:
+                lines_pl = file.readlines()
+        try:
+            particle_count = int(lines_pl[2])
+            layers = int(lines_pl[6])
+            line = 9  # <Движение частицы в слое (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+            part_move = []
+            for i in range(particle_count):
+                line += 1
+                part_move.append(lines_pl[line].strip().split())
+            part_move = np.array(part_move, dtype=int)
+
+            line += 1  # <Объемный источник (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+            line += particle_count + 1
+            line += 1  # <Частица номер>
+
+            surface_source = {}
+
+            for i in range(particle_count):
+                line += 1
+                lay_number = int(lines_pl[line].strip())
+
+                key_list = []
+                for j in range(layers):
+                    line += 1
+                    key_list.append(lines_pl[line].split())
+
+                key_list = np.array(key_list, dtype=int)
+                surface_source.update({lay_number: key_list})
+                line += 1  # <Расчет плотности тока (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+
+            line += particle_count + 1  # <Ионизационное торможение (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+
+            io_brake = []
+            for i in range(particle_count):
+                line += 1
+                io_brake.append(lines_pl[line].strip().split())
+            io_brake = np.array(io_brake, dtype=int)
+
+            line += 1  # <Источник ионизации (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+
+            return np.array(part_move), np.array(io_brake)
+
+        except Exception:
+            print('Ошибка в чтении файла .PL')
+            return
+
+
 if __name__ == '__main__':
-    # x = DataParcer(r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PAR').par_decoder()
-    x = DataParcer(r'C:\work\tzp_8\KUVSH.LAY').lay_decoder()
-    print(x)
+    x = DataParcer(r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PAR').par_decoder()
+    move, io_br = DataParcer(
+        r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PL').pl_decoder()
+    # x = DataParcer(r'C:\work\tzp_8\KUVSH.LAY').lay_decoder()
+
+    exist_dict = {}
+
+    for part_dict in x:
+        part_dict_vals = part_dict.values()
+        part_number = part_dict.items()[0]
+        for components in part_dict_vals:
+            for item in components.items():
+                if item[1][0] == 1:
+                    exist_dict.update({item[0]: item[1]})

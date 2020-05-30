@@ -319,12 +319,12 @@ class Example(Frame):
 def main(db):
 ##    sd = os.getcwd()
 ##    (na, nu) = cor.read_elements(sd)
-    er = Tk()
+    er = Toplevel()
     ex = Example(er, db)
     x = (er.winfo_screenwidth() - er.winfo_reqwidth()) / 2
     y = (er.winfo_screenheight() - er.winfo_reqheight()) / 4
     er.geometry("+%d+%d" % (x, y))
-    er.mainloop()
+    #er.mainloop()
 
 
 if __name__ == '__main__':

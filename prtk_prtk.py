@@ -195,7 +195,7 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
         ie = '{0:03d}'.format(i)
         for pp in prc:
             if f'_{pp}_' in exist_list.keys():
-                if exist_list.get(f'_{pp}_')[0] != 0:
+                if int(exist_list.get(f'_{pp}_')) != 0:
                     f_old = '_' + pp + '_' + mt
                     fsp = os.path.join(fs, f_old)
                     ls = prt[pp](fsp, kf)
@@ -239,16 +239,26 @@ def main(dp):
 
     par_dir = os.path.join(idir_, par_path(idir_))
     part_list = Project_reader.DataParcer(par_dir).par_decoder()
-    exist_dict = {}
-    for dicts in part_list:
-        for key in dicts.keys():
-            if dicts.get(key)[0] == 1 or dicts.get(key)[0] == 2:
-                exist_dict.update({key: dicts.get(key)})
+    move, io_brake = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+
+
     # print(exist_dict)
 
     for mat_, ro in list(dly.keys()):
         mt = mat_.upper()
         lmat = dly[(mat_, ro)]
+
+        exist_dict = {}
+        for i, part_dict in enumerate(part_list):
+            for key in part_dict.keys():
+                part_dict_vals = part_dict.values()
+                part_number = key
+
+            if move[int(part_number), lmat] == 1:
+                for components in part_dict_vals:
+                    for item in components.items():
+                        if item[1][0] == 1:
+                            exist_dict.update({item[0]: item[1][0]})
         if mt in pmat:
             prtk_copy_file(idir_, pdir, mt, ro, lmat, dlog, exist_dict)
 

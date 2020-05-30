@@ -126,10 +126,10 @@ class Example(Frame):
         self._ent = []
         self._ent = [' ' for id in range(self._n)]
         self._bt = [' ' for id in range(self._n)]
-        self._var = [StringVar() for id in range(self._n)]
-        self._pv = [StringVar() for id in range(self._n)]
-        self._name_mt = StringVar(None, db.get('name','Composite'))
-        self._ro = StringVar()
+        self._var = [StringVar(Frame) for id in range(self._n)]
+        self._pv = [StringVar(Frame) for id in range(self._n)]
+        self._name_mt = StringVar(Frame, db.get('name','Composite'))
+        self._ro = StringVar(Frame)
         self._ro.set(0.0)
         self._nelm = 100
         self._dmt = self.read_elements()[0]
@@ -301,13 +301,13 @@ class Example(Frame):
 
 
 def main(db):
-    er = Tk()
+    er = Toplevel()
     ex = Example(er, db)
     x = (er.winfo_screenwidth() - er.winfo_reqwidth()) / 2
     y = (er.winfo_screenheight() - er.winfo_reqheight()) / 4
     er.geometry("+%d+%d" % (x, y))
-    er.mainloop()
-
+    #er.mainloop()
+    #er.quit()
 
 if __name__ == '__main__':
 
