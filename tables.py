@@ -105,6 +105,8 @@ def pech_ask(path):
         pech_dir = pech_open_dir(path)
         if pech_dir == -1:
             return -1
+        else:
+            return pech_dir
     elif ask_pe is False:
         pech_dir = 'temp'
         if not os.path.exists(os.path.join(path, 'temp')):
@@ -137,7 +139,7 @@ def pech_existance(pr_path):
                 return os.path.join(pr_path, pech_dir)
         else:
             pech_dir = pech_ask(path)
-            return os.path.join(pr_path, pech_dir)
+            return os.path.normpath(pech_dir)
     elif True:
         pech_dir = pech_ask(path)
         return os.path.join(pr_path, pech_dir)
