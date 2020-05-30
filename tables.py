@@ -89,8 +89,7 @@ def pech_open_dir(path):
     if 'configuration' in os.listdir(pech_path):
         return os.path.abspath(pech_path)
     else:
-        messagebox.showwarning('Path error', 'Не обнаружен файл configuration.\n'
-                                             'Папка не является проектом pechs')
+        messagebox.showwarning('Path error', 'Папка не является проектом pechs (Не обнаружен файл configuration.)')
         ask = messagebox.askyesno('Выбрать другую папку?', 'Выбрать другую папку?')
         if ask is True:
             pech_open_dir(path)
@@ -156,7 +155,17 @@ def xrun(modname, args):
     ##    print(modname)                     # run in a new process
     # info(modname)
     module = __import__(modname)  # build gui from scratch
-    module.main(args)
+    if modname == 'lay_edit':
+        module.main(args[0],args[1])
+    else:
+        module.main(args)
+
+
+def xrun_lay(modname, arg1, arg2):
+    ##    print(modname)                     # run in a new process
+    # info(modname)
+    module = __import__(modname)  # build gui from scratch
+    module.main(arg1, arg2)
 
 
 class Example(Frame):
@@ -515,12 +524,12 @@ class Example(Frame):
 
     def onEditLayRemp(self):
         dp = {'lay': self._flrmp.get(), 'mat': self._plc_mat.get()}
-        Process(target=xrun, args=('lay_edit', dp)).start()
+        Process(target=xrun, args=('lay_edit', (dp, self._parent))).start()
         pass
 
     def onEditLayPech(self):
         dp = self._bd.copy()
-        Process(target=xrun, args=('lay_edit', dp)).start()
+        Process(target=xrun, args=('lay_edit', (dp, self._parent))).start()
         pass
 
     def onViewTable(self):

@@ -51,9 +51,10 @@ def fixWindowsPath(cmdline):
 
 
 class Example(Frame):
-    def __init__(self, parent, db):
+    def __init__(self, parent, db, mw):
         Frame.__init__(self, parent)
         self.parent = parent
+        self.mw = mw
         self.focus_set()
         self.parent.protocol("WM_DELETE_WINDOW", self.onExit)
         self._n = cfg.val.nrlay
@@ -234,7 +235,7 @@ class Example(Frame):
 
     def onExit(self):
         answer = askyesno(title="Сохранение файла", message="Сохранить файл?")
-        if answer == True:
+        if answer is True:
             check = self.onSave()
             if check == 0:
                 self.parent.destroy()
@@ -243,12 +244,12 @@ class Example(Frame):
                 if ask is True:
                     return
                 else:
-                    self.parent.destroy()
-                    exit(1)
+                    self.mw.quit()
+                    self.mw.destroy()
                     return
-        elif answer == False:
-            self.parent.destroy()
-            exit(1)
+        elif answer is False:
+            self.mw.quit()
+            self.mw.destroy()
             return
 
     def onSave(self):
@@ -386,15 +387,15 @@ class Example(Frame):
         self._sp = [os.path.splitext(ff)[0] for ff in tt]
 
 
-def main(db):
+def main(db, mw):
     ##    sd = os.getcwd()
     ##    (na, nu) = cor.read_elements(sd)
     er = Toplevel()
-    ex = Example(er, db)
+    ex = Example(er, db, mw)
     x = (er.winfo_screenwidth() - er.winfo_reqwidth()) / 2
     y = (er.winfo_screenheight() - er.winfo_reqheight()) / 4
     er.geometry("+%d+%d" % (x, y))
-    #er.mainloop()
+    # er.mainloop()
 
 
 if __name__ == '__main__':
