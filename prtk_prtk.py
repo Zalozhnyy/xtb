@@ -180,6 +180,7 @@ def read_ro(fl):
     return ro
 
 
+
 def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     fs = os.path.join(dirin, mt)
     fl = os.path.join(fs, 'RO_' + mt)
@@ -191,10 +192,26 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     prc = [ff.split('_')[1] for ff in nf]
 
 
+    cond_six = False
+    lay_dir = os.path.join(dir, lay_path(dir))
+    _, co = Project_reader.DataParcer(lay_dir).lay_decoder()
+    if any([i == 6 for i in co]):
+        cond_six = True
+
     for i in im:
         ie = '{0:03d}'.format(i)
         for pp in prc:
-            if f'_{pp}_' in exist_list.keys():
+            if pp == 'ION' and cond_six:
+                f_old = '_' + pp + '_' + mt
+                fsp = os.path.join(fs, f_old)
+                ls = prt[pp](fsp, kf)
+                f_new = '_' + pp + '_' + ie
+                fd = os.path.join(dir, f_new)
+                dg.write(' {0} => {1} \n'.format(f_old, f_new))
+                with open(fd, 'w') as ff:
+                    ff.writelines(ls)
+
+            elif f'_{pp}_' in exist_list.keys():
                 if int(exist_list.get(f'_{pp}_')) != 0:
                     f_old = '_' + pp + '_' + mt
                     fsp = os.path.join(fs, f_old)
@@ -214,6 +231,13 @@ def par_path(initial_dir):
         if f.endswith(".PAR") or f.endswith(".PAR"):
             path = f
     return path
+
+def lay_path(initial_dir):
+    for f in os.listdir(initial_dir):
+        if f.endswith(".LAY") or f.endswith(".LAY"):
+            path = f
+    return path
+
 
 
 ## Функция для пересчета таблиц
@@ -239,7 +263,11 @@ def main(dp):
 
     par_dir = os.path.join(idir_, par_path(idir_))
     part_list = Project_reader.DataParcer(par_dir).par_decoder()
-    move, io_brake = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+    move, io_brake, layers_numbers = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+
+    move_dict = {}
+    for i in range(layers_numbers.shape[0]):
+        move_dict.update({layers_numbers[i]: move[:, i]})
 
 
     # print(exist_dict)
@@ -254,11 +282,13 @@ def main(dp):
                 part_dict_vals = part_dict.values()
                 part_number = key
 
-            if move[int(part_number), lmat] == 1:
+            if move_dict.get(lmat[0])[part_number] == 1:
                 for components in part_dict_vals:
                     for item in components.items():
                         if item[1][0] == 1:
                             exist_dict.update({item[0]: item[1][0]})
+                print(exist_dict)
+
         if mt in pmat:
             prtk_copy_file(idir_, pdir, mt, ro, lmat, dlog, exist_dict)
 

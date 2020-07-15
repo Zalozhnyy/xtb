@@ -106,6 +106,7 @@ class DataParcer:
             line = 2  # <Количество слоев> + 1 строка
             lay_numeric = int(lines[line])
             out_lay = []
+            conductivity = []
             # print(f'<Количество слоев> + 1 строка     {lines[line]}')
 
             line += 2  # <Номер, название слоя>
@@ -119,6 +120,7 @@ class DataParcer:
                 local.append(lines[line].split()[-1])  # 1 - название слоя
 
                 line += 2  # <газ(0)/не газ(1), и тд + 1 строка
+                conductivity.append(int(lines[line].strip().split()[1]))
 
                 extended = False
                 if int(lines[line].split()[-1]) == 1:
@@ -142,7 +144,7 @@ class DataParcer:
             #     density *= 1000
             #     out_lay[i][2] = f'{density}'
 
-            return out_lay
+            return out_lay, conductivity
 
         except Exception:
             print('Ошибка в чтении файла .LAY')
@@ -160,7 +162,10 @@ class DataParcer:
         try:
             particle_count = int(lines_pl[2])
             layers = int(lines_pl[6])
-            line = 9  # <Движение частицы в слое (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+            line = 8  # <Layer numbers>
+            layers_numbers = np.array(lines_pl[line].strip().split(), dtype=int)
+            line += 1  # <Движение частицы в слое (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+
             part_move = []
             for i in range(particle_count):
                 line += 1
@@ -196,7 +201,7 @@ class DataParcer:
 
             line += 1  # <Источник ионизации (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
 
-            return np.array(part_move), np.array(io_brake)
+            return part_move, io_brake, layers_numbers
 
         except Exception:
             print('Ошибка в чтении файла .PL')
@@ -204,17 +209,22 @@ class DataParcer:
 
 
 if __name__ == '__main__':
-    x = DataParcer(r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PAR').par_decoder()
-    move, io_br = DataParcer(
-        r'C:\Users\Никита\Dropbox\work_cloud\source_cont\entry_data\Wpala\ABIK_LOCAL.PL').pl_decoder()
-    # x = DataParcer(r'C:\work\tzp_8\KUVSH.LAY').lay_decoder()
+    # x = DataParcer(r'C:\work\Test_projects\SHPALA_1R\BB.PAR').par_decoder()
+    x = DataParcer(r'C:\work\Test_projects\wpala\shpala_new.LAY').lay_decoder()
+    print(x)
+    # move, io_br, layers_numbers = DataParcer(
+    #     r'C:\work\Test_projects\SHPALA_1R\BB.PL').pl_decoder()
+    # move, io_br, layers_numbers = DataParcer(
+    #     r'C:\work\wpala\shpala_new.PL').pl_decoder()
+    #
+    #
+    # print(move)
+    # print(io_br.shape)
+    # print(layers_numbers.shape)
 
-    exist_dict = {}
-
-    for part_dict in x:
-        part_dict_vals = part_dict.values()
-        part_number = part_dict.items()[0]
-        for components in part_dict_vals:
-            for item in components.items():
-                if item[1][0] == 1:
-                    exist_dict.update({item[0]: item[1]})
+    # io_brake_dict = {}
+    #
+    # for i in range(layers_numbers.shape[0]):
+    #     io_brake_dict.update({layers_numbers[i]: io_br[:, i]})
+    #
+    # print(io_brake_dict)

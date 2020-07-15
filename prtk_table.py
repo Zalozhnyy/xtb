@@ -177,6 +177,13 @@ def par_path(initial_dir):
     return path
 
 
+def lay_path(initial_dir):
+    for f in os.listdir(initial_dir):
+        if f.endswith(".LAY") or f.endswith(".LAY"):
+            path = f
+    return path
+
+
 def copy_file(dir, nf, im):
     if len(im) == 1:
         return
@@ -215,6 +222,7 @@ def get_list_material(mat_fl_):
 #
 def main(dp):
     dly = cord.read_layer(dp['lay'], nmfl='')
+    print(len(dly))
     nG_ = dp.get('nG', 201)
     print('Ng = {0}'.format(nG_))
     gg_ = np.linspace(0.0, 1.0, nG_)
@@ -225,7 +233,21 @@ def main(dp):
 
     par_dir = os.path.join(idir_, par_path(idir_))
     part_list = Project_reader.DataParcer(par_dir).par_decoder()
-    move, io_brake = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+    move, io_brake, layers_numbers = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+    cond_six = False
+    lay_dir = os.path.join(idir_, lay_path(idir_))
+    _, co = Project_reader.DataParcer(lay_dir).lay_decoder()
+    if any([i == 6 for i in co]):
+        cond_six = True
+
+    io_brake_dict = {}
+    move_dict = {}
+    for i in range(layers_numbers.shape[0]):
+        io_brake_dict.update({layers_numbers[i]: io_brake[:, i]})
+        move_dict.update({layers_numbers[i]: move[:, i]})
+
+    print(f'io br  {io_brake_dict}')
+    print(f'move  {move_dict}')
 
     ##    mat_fl_ = dp['mf']
     ##    nm_comp_ = get_list_material(mat_fl_)
@@ -234,7 +256,7 @@ def main(dp):
         mt_ = 'mat-' + mat_
         imat = dly[(mat_, Ro_)][0]
         dir_mat_ = os.path.join(dp.get('tab', ''), mt_)
-        print(dir_mat_)
+
         dir_mat_el_ = os.path.join(dir_mat_, 'electron')
         dir_mat_ph_ = os.path.join(dir_mat_, 'photon')
 
@@ -260,7 +282,7 @@ def main(dp):
         ttl_st_ = ttl_ - xer_[:, -1]
         vz_ = zip(E_, ttl_, ttl_st_)
         ff_ = parot_[key_]['name_out']
-        if np.any(io_brake[:, imat] == 1):
+        if np.any(io_brake_dict.get(int(imat))[:] == 1):
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
                 for v_ in vz_:
@@ -273,7 +295,7 @@ def main(dp):
                 part_dict_vals = part_dict.values()
                 part_number = key
 
-            if move[int(part_number), imat] == 1:
+            if move_dict.get(imat)[part_number] == 1:
                 for components in part_dict_vals:
                     for item in components.items():
                         if item[1][0] == 1:
@@ -303,7 +325,7 @@ def main(dp):
         ##        ttl_st_ = ttl_ - xer_[:,-1]
         vz_ = zip(E_, cs_el_[:, 2], np.power(10, xer_[:, 1]) * 10 ** (-6))
         ff_ = parot_[key_]['name_out']  # _EXC_
-        if ff_ in exist_dict.keys():
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, Emin=E_[0], nE=nE_))
@@ -326,8 +348,8 @@ def main(dp):
         ##        p_rr_[:, 1:] = np.power(10,p_rr_[:, 1:])-1
         ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
         vz_ = zip(E_, cs_el_[:, 0])
-        ff_ = parot_[key_]['name_out'] #_ELA_
-        if ff_ in exist_dict.keys():
+        ff_ = parot_[key_]['name_out']  # _ELA_
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(
@@ -382,7 +404,7 @@ def main(dp):
         eb_ph_, heap__ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.eb'))
         eb_ph_ = eb_ph_[:, -1] * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, -1], eb_ph_)
-        ff_ = parot_[key_]['name_out']  #_FOT_
+        ff_ = parot_[key_]['name_out']  # _FOT_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -401,7 +423,7 @@ def main(dp):
         for k_ in range(nE_):
             p_ive_[k_, :] = np.interp(gg_, gamma_, ive_[k_, :]) * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, 2])
-        ff_ = parot_[key_]['name_out']  #_KOM_
+        ff_ = parot_[key_]['name_out']  # _KOM_
         if ff_ in exist_dict.keys():
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -504,9 +526,7 @@ def create_parser():
         fromfile_prefix_chars='@',
         description=textwrap.dedent(u'''\
      Программа для пересчета таблиц в формат программного комплекса РЭМП
-     ---------------------------------------------------------------------
-
-         '''),
+     ---------------------------------------------------------------------'''),
         epilog=phis.epic,
         add_help=False)
 

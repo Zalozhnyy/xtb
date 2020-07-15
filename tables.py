@@ -45,6 +45,7 @@ from calc_tables import main as main_calc_tables
 ##import edit_mat
 import param
 import cfg
+from Project_reader import DataParcer
 
 
 def read_prj(prjfname, stk='Layers name'):
@@ -111,7 +112,7 @@ def pech_ask(path):
         pech_dir = 'temp'
         if not os.path.exists(os.path.join(path, 'temp')):
             os.mkdir(os.path.join(path, 'temp'))
-        return pech_dir
+        return os.path.join(path, pech_dir)
 
 
 def pech_existance(pr_path):
@@ -136,13 +137,13 @@ def pech_existance(pr_path):
                 return os.path.join(pr_path, pech_name)
             else:
                 pech_dir = pech_ask(path)
-                return os.path.join(pr_path, pech_dir)
+                return os.path.normpath(pech_dir)
         else:
             pech_dir = pech_ask(path)
             return os.path.normpath(pech_dir)
     elif True:
         pech_dir = pech_ask(path)
-        return os.path.join(pr_path, pech_dir)
+        return os.path.normpath(pech_dir)
 
 
 def info(title):
@@ -158,16 +159,9 @@ def xrun(modname, args):
     # info(modname)
     module = __import__(modname)  # build gui from scratch
     if modname == 'lay_edit':
-        module.main(args[0],args[1])
+        module.main(args[0], args[1])
     else:
         module.main(args)
-
-
-def xrun_lay(modname, arg1, arg2):
-    ##    print(modname)                     # run in a new process
-    # info(modname)
-    module = __import__(modname)  # build gui from scratch
-    module.main(arg1, arg2)
 
 
 class Example(Frame):
@@ -348,9 +342,12 @@ class Example(Frame):
         """
         """
         self.onOpenProj()  # добавление в ямл новых штук
-        flnmp = askopenfilename(initialdir=self._bd['home'], title="Выберите файл проекта",
-                                filetypes=[('Файл проекта', '.prj')])
-        # flnmp = r'C:\work\test\TEST.PRJ'
+
+        try:
+            flnmp = projectfilename
+        except NameError:
+            flnmp = askopenfilename(initialdir=self._bd['home'], title="Выберите файл проекта",
+                                    filetypes=[('Файл проекта', '.prj')])
 
         print(('file {0}'.format(flnmp)))
         if len(flnmp) > 2:
@@ -361,7 +358,7 @@ class Example(Frame):
             nm_ltb = nm_lay.split('.')[0] + '.LTB'
             print(('Файл с описанием оболочек {}'.format(nm_lay)))
             dr_prj = os.path.dirname(os.path.normpath(flnmp))
-            layers = self.lay_decoder(os.path.join(dr_prj, nm_lay))
+            layers, _ = DataParcer(os.path.join(dr_prj, nm_lay)).lay_decoder()
 
             dr_path = os.path.split(dr_prj)[0]
             # fl_path = os.path.join(dr_path, 'path.config')
@@ -414,66 +411,6 @@ class Example(Frame):
             ##            self._fllay.set(self._bd['lay'])
             ##            self._flcfg.set(self._bd['cfg'])
             self.onEditLayPech()  # запуск окна с выбором мат файлов. до него работа с путями, активация кнопок
-
-    def lay_decoder(self, path):
-        #### .LAY DECODER
-        decoding_def = locale.getpreferredencoding()
-        decoding = 'utf-8'
-
-        try:
-            with open(rf'{path}', 'r', encoding=f'{decoding}') as file:
-                lines = file.readlines()
-        except UnicodeDecodeError:
-
-            with open(rf'{path}', 'r', encoding=f'{decoding_def}') as file:
-                lines = file.readlines()
-
-        try:
-
-            line = 2  # <Количество слоев> + 1 строка
-            lay_numeric = int(lines[line])
-            out_lay = []
-            # print(f'<Количество слоев> + 1 строка     {lines[line]}')
-
-            line += 2  # <Номер, название слоя>
-            # print(f'<Номер, название слоя>     {lines[line]}')
-
-            for layer in range(lay_numeric):
-                local = []
-                line += 1  # <Номер, название слоя> + 1 строка
-                # print(f'<Номер, название слоя> + 1 строка     {lines[line]}')
-                local.append(lines[line].split()[0])  # 0 - номер слоя
-                local.append(lines[line].split()[-1])  # 1 - название слоя
-
-                line += 2  # <газ(0)/не газ(1), и тд + 1 строка
-
-                extended = False
-                if int(lines[line].split()[-1]) == 1:
-                    extended = True
-
-                line += 2  # <давление в слое(атм.), плотн.(г/см3), + 1 строка
-                local.append(lines[line].split()[1])  # 2 - плотность
-
-                if extended is False:
-                    line += 2  # следущая частица    <Номер, название слоя>
-                elif extended is True:
-                    line += 2  # <молекулярный вес[г/моль] + 1 строка
-
-                    line += 2  # следущая частица    <Номер, название слоя>
-                out_lay.append(local)
-
-            # sgs convert to si
-
-            # for i in range(len(out_lay)):
-            #     density = eval(out_lay[i][2])
-            #     density *= 1000
-            #     out_lay[i][2] = f'{density}'
-
-            return out_lay
-
-        except Exception:
-            print('Ошибка в чтении файла .LAY')
-            return
 
     def onElPhoto(self):
         dp = self._bd.copy()
