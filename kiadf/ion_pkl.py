@@ -87,7 +87,7 @@ def set_ion(zi, bb, elem ='O'):
             sf = fl_.extract(nfile)
             ##            ss_ = sf.split('\n')
             ##            dp = pickle.load(fl_.open(nfile,'r'))
-            print(sf)
+            #print(sf)
             o_pkl = open(sf,'rb')
             dp = pickle.load(o_pkl)
             o_pkl.close()
