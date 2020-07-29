@@ -20,7 +20,7 @@ import yaml
 import locale
 
 import compoz_read as cord
-import Project_reader
+import Project_reader_tables
 
 ## Функция для считывания материалов, для которых
 # необходимо пересчитать таблицы
@@ -194,7 +194,7 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
 
     cond_six = False
     lay_dir = os.path.join(dir, lay_path(dir))
-    _, co = Project_reader.DataParcer(lay_dir).lay_decoder()
+    _, co = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
     if any([i == 6 for i in co]):
         cond_six = True
 
@@ -262,8 +262,8 @@ def main(dp):
     print(fllog)
 
     par_dir = os.path.join(idir_, par_path(idir_))
-    part_list = Project_reader.DataParcer(par_dir).par_decoder()
-    move, io_brake, layers_numbers = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+    part_list = Project_reader_tables.DataParcer(par_dir).par_decoder()
+    move, io_brake, layers_numbers = Project_reader_tables.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
 
     move_dict = {}
     for i in range(layers_numbers.shape[0]):

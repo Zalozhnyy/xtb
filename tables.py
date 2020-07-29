@@ -45,7 +45,7 @@ from calc_tables import main as main_calc_tables
 ##import edit_mat
 import param
 import cfg
-from Project_reader import DataParcer
+from Project_reader_tables import DataParcer
 
 
 def read_prj(prjfname, stk='Layers name'):

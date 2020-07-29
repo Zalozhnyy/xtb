@@ -18,6 +18,7 @@ from scipy import integrate
 
 import numpy as np
 from kiadf import phisconst as phis
+from kiadf import ion_pkl as ionp
 
 try:
     import matplotlib.pyplot as plt
@@ -394,7 +395,7 @@ class Endf():
             self.prtkl_ = particl
             nfile = self.name_file()
         else:
-            pass
+            self._El = nfile.split('_')[1]
 
         if nfile.startswith('e'):
             NmFlZip_ = os.path.join(xdir_, self.elZip_)
@@ -407,34 +408,30 @@ class Endf():
 
         if z.is_zipfile(NmFlZip_):
             fl_ = z.ZipFile(NmFlZip_,'r')
-
-
             try:
                 sf = fl_.read(nfile)
                 fl_.close()
             except KeyError:
-                print(('Oтсутствует файл элемента {0} в базе данных ENDF.'.format(nfile)))
+                print('Oтсутствует файл элемента {0} в базе данных ENDF.'.format(nfile))
                 exit(3)
 
-
-        sf = str(sf,encoding='utf-8')
-
+        sf = str(sf, encoding='utf-8')
 
         ss_ = sf.split('\n')
-
 
         self.endf_A = float(gavno2num(ss_[1].split()[1])) * phis.AEM
         self.hh_, self.ElSh_ = e_head(ss_)  # read head of ENDF-file
 
         # убираем последнюю оболочку, если считаем ион
-        if ion:
-            self.ElSh_.pop(-1)
-        ##        self.str_={ky:read_endf(ss_,pp_,ky) for ky in pp_.keys()}
 
         self.sig_shell = {}
 
-        for ky in list(self.hh_.keys()):
+        for ky in self.hh_.keys():
             self._str[ky] = read_endf(ss_, self.hh_, ky)
+        if ion:
+            # print ion, sEl
+            ionp.set_ion(ion, self._str, elem=self._El)
+        ##        self.str_={ky:read_endf(ss_,pp_,ky) for ky in pp_.keys()}
 
     ## Выдача данных в старом формате, где числа заданы в виде строк
     # Функция добавлена для совместимости со старыми версиями

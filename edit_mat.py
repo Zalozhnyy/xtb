@@ -18,7 +18,7 @@ import yaml
 from tkinter import *
 from tkinter.filedialog import askopenfilename, askdirectory, asksaveasfilename
 from tkinter.simpledialog import askfloat
-from tkinter.messagebox import showinfo
+from tkinter.messagebox import showinfo, askyesno
 
 import compoz_read as cor
 
@@ -101,7 +101,10 @@ class Example(Frame):
             self._msd = os.path.join(os.path.dirname(__file__), mat_dir)
         else:
             self._msd = db['mat']
-
+        self._bion = False
+        self._lion = []
+        self._vion = BooleanVar()
+        self._vion.set(self._bion)
         self._parent = parent
         self._parent.protocol("WM_DELETE_WINDOW", self.onExit)
         sd = os.path.dirname(__file__)
@@ -112,18 +115,28 @@ class Example(Frame):
         self._mat = '.' + cfg.val.extmat
         self._nmat = [' ' for id in range(self._n)]
         self._bmat = []
+        self._sp = [0, 1, 2]
         self._ent = [' ' for id in range(self._n)]
         self._bt = [' ' for id in range(self._n)]
         self._var = [StringVar(master=parent) for id in range(self._n)]
+        self._veion = [StringVar(master=parent) for id in range(self._n)]
         self._pv = [StringVar(master=parent) for id in range(self._n)]
         self._name_mt = StringVar(parent, db.get('name', 'MATERIAL'))
         self._ro = StringVar(parent)
         self._ro.set(0.0)
         self._nelm = 100
         self._dmt = self.read_elements()[0]
+        self.initMenu()
         self.initUI()
         flnm = db.get('file', '')
         if len(flnm) > 5:
+            if '+' in flnm:
+                self._bion = True
+                self.showIon()
+            else:
+                self._bion = False
+                self.hideIon()
+            self._vion.set(self._bion)
             self.initdata()
             ms = cor.Compozit(flnm, self._nu)
             self._name_mt.set(ms._vv[0][0]['Composite'])
@@ -132,8 +145,9 @@ class Example(Frame):
                 self._var[i].set(mt[0])
                 self._bt[i]['text'] = mt[0]
                 self._pv[i].set(mt[1])
+                self._veion[i].set(mt[2])
 
-    def initUI(self):
+    def initMenu(self):
         self._parent.title("Композиты")
 
         menubar = Menu(self._parent)
@@ -144,10 +158,21 @@ class Example(Frame):
         fileMenu.add_command(label="Открыть", underline=0, command=self.onOpen)
         fileMenu.add_command(label="Создать", underline=0, command=self.initdata)
         fileMenu.add_command(label="Сохранить", underline=0, command=self.onSave)
-        fileMenu.add_command(label="Сохранить как", underline=0, command=self.onSaveAs)
+        #fileMenu.add_command(label="Сохранить как", underline=0, command=self.onSaveAs)
+        fileMenu.add_separator()
         fileMenu.add_command(label="Проверить", underline=0, command=self.suminfo)
+        fileMenu.add_separator()
         fileMenu.add_command(label="Выйти", underline=0, command=self.onExit)
         menubar.add_cascade(label="Файл", underline=0, menu=fileMenu)
+
+        fileServ = Menu(menubar, tearoff=0)
+        fileServ.add_checkbutton(label="Ионизированный", variable=self._vion,
+                                 underline=0, command=self.onIon)
+
+        menubar.add_cascade(label="Сервис", underline=0, menu=fileServ)
+
+
+    def initUI(self):
 
         frame_ = Frame(self._parent, bd=1)
         frame_.pack(fill=BOTH, expand=True, padx=10)
@@ -160,8 +185,10 @@ class Example(Frame):
                                                                                        sticky=W + E)
         i += 1
         Label(frame_, text='Наименование').grid(row=i, column=0)
-        name = Entry(frame_, textvariable=self._name_mt, relief=SUNKEN,
-                     justify=RIGHT).grid(row=i, column=1, padx=1, ipady=0, pady=0, sticky=W + E)
+        self._name_comp = Entry(frame_, textvariable=self._name_mt, relief=SUNKEN,
+                     justify=RIGHT)
+        self._name_comp.bind('<FocusOut>', self.tblIon)
+        self._name_comp.grid(row=i, column=1, padx=1, ipady=0, pady=0, sticky=W + E)
         i += 1
         Label(frame_, text='Плотность').grid(row=i, column=0)
         ro = Entry(frame_, textvariable=self._ro, relief=SUNKEN,
@@ -169,6 +196,9 @@ class Example(Frame):
         i += 1
         Label(frame_, text='Хим. элемент').grid(row=i, column=0)
         Label(frame_, text='Массовая Доля').grid(row=i, column=1)
+
+        self._lab_ion = Label(frame_, text='Заряд Иона', width=10)
+        self._lab_ion.grid(row=i, column=2)
 
         k = i + 1
 
@@ -182,7 +212,22 @@ class Example(Frame):
                                  justify=RIGHT)
             self._ent[i].grid(row=i + k, column=1, padx=5, pady=1, sticky=W + E)
             ##            self._bmat.append(bt)
+
+            ##            ni = Spinbox(frame_, values=(0, 1, 2), width=5, bg='#FFFFFF', fg='#000000')
+            self._veion[i].set(0)
+            ni = OptionMenu(frame_, self._veion[i], *self._sp)
+
+            ni.grid(row=i + k, column=2, padx=5, pady=1, sticky=W + E)
+            self._lion.append(ni)
             pass
+            ##        if not self._bion:
+            ##            self._lab_ion.grid_remove()
+
+        if not self._bion:
+            self._lab_ion.grid_remove()
+            for i in range(self._n):
+                self._lion[i].grid_remove()
+
         bs = Button(frame_, text='Сохранить', command=self.onSave, relief=RAISED).grid(row=i + k,
                                                                                        column=0, columnspan=2, padx=5,
                                                                                        pady=10, sticky=W + E)
@@ -190,10 +235,51 @@ class Example(Frame):
     def call(self, position):
         pass
 
-    ##        print([self._var[i].get() for i in range(self._n)])
+        ##        print([self._var[i].get() for i in range(self._n)])
 
     def callbk(self, event):
         print(event.widget)
+
+    def tblIon(self, event):
+
+        if '+' in self._name_mt.get():
+            self._bion = True
+            self.showIon()
+        else:
+            self._bion = False
+            self.hideIon()
+        self._vion.set(self._bion)
+
+    def onIon(self):
+        if '+' in self._name_mt.get():
+            self._bion = True
+            self.showIon()
+            self._vion.set(self._bion)
+            return
+
+        self._bion = self._vion.get()
+        self._vion.set(self._bion)
+        if self._bion:
+            self.showIon()
+        ##            for i in range(self._n):
+        ##                self._lion[i].grid()
+        ##            self._lab_ion.grid()
+        else:
+            self.hideIon()
+
+    ##            for i in range(self._n):
+    ##                self._lion[i].grid_remove()
+    ##             self._lab_ion.grid_remove()
+
+    def showIon(self):
+        self._lab_ion.grid()
+        for i in range(self._n):
+            self._lion[i].grid()
+
+    def hideIon(self):
+        for i in range(self._n):
+            self._lion[i].grid_remove()
+        self._lab_ion.grid_remove()
 
     def initdata(self):
         self._name_mt.set('MATERIAL')
@@ -211,6 +297,7 @@ class Example(Frame):
     def tblMendel(self, event):
         self._ta = Toplevel()
         self._ta.geometry("+%d+%d" % (event.x_root, event.y_root))
+        self._ta.title("Таблица Менделеева")
 
         lb = []
         for k in range(1, self._nelm):
@@ -225,7 +312,7 @@ class Example(Frame):
         ##        print(self._k)
         self._ta.grab_set()
         self._ta.focus_set()
-        # self._ta.wait_window()
+        self._ta.wait_window()
 
     def delMendel(self, event):
         event.widget['text'] = ''
@@ -235,11 +322,15 @@ class Example(Frame):
         self._evr.set(v)
 
     def onExit(self):
-        ##        self.onSave()
-        self._parent.destroy()
+        answer = askyesno(title="Сохранение файла", message="Сохранить файл?")
+        if answer == True:
+            bt = self.onSave()
+            self._parent.destroy()
+        else:
+            self._parent.destroy()
 
     def sum(self):
-        tt = [float(self._pv[i].get()) for i in range(self._n)]
+        tt = [float(self._pv[i].get()) for i in range(self._n) if len(self._bt[i]['text']) > 0]
         sm = sum(tt)
         return sm
 
@@ -247,23 +338,31 @@ class Example(Frame):
         sm = self.sum()
         showinfo('Сумма массовых долей', str(sm))
 
-    def onSaveAs(self):
-        name = self._name_mt.get()
-        name = name.lower()
-        mt = {}
-        sps = []
-        tt = [float(self._pv[i].get()) for i in range(self._n)]
-        for i, pp in enumerate(tt):
-            if pp > 0.0:
-                ##                sps.append([self._var[i].get(), pp])
-                sps.append([self._bt[i]['text'], pp])
+    def sum_rkt(self):
+        sm = self.sum()
+        if abs(1.0 - sm) <1.e-5:
+            return True
+        else:
+            showinfo('Сумма массовых долей', str(sm))
+            return False
 
-        mt[name.upper()] = {'elem': sps, 'ro': float(self._ro.get())}
-        ##        msd = askdirectory(initialdir=self._msd, title = u"Куда сохраните файл")
-        msf = os.path.join(fixWindowsPath(self._msd), name + self._mat)
-        msf = asksaveasfilename(initialdir=self._msd, initialfile=msf, title="Сохраняем файл")
-        if len(msf) > 1:
-            cor.write_file(msf, mt)
+    # def onSaveAs(self):
+    #     name = self._name_mt.get()
+    #     name = name.lower()
+    #     mt = {}
+    #     sps = []
+    #     tt = [float(self._pv[i].get()) for i in range(self._n)]
+    #     for i, pp in enumerate(tt):
+    #         if pp > 0.0:
+    #             ##                sps.append([self._var[i].get(), pp])
+    #             sps.append([self._bt[i]['text'], pp])
+    #
+    #     mt[name.upper()] = {'elem': sps, 'ro': float(self._ro.get())}
+    #     ##        msd = askdirectory(initialdir=self._msd, title = u"Куда сохраните файл")
+    #     msf = os.path.join(fixWindowsPath(self._msd), name + self._mat)
+    #     msf = asksaveasfilename(initialdir=self._msd, initialfile=msf, title="Сохраняем файл")
+    #     if len(msf) > 1:
+    #         cor.write_file(msf, mt)
 
     ##        print(msd)
     ##        with open(os.path.join(fixWindowsPath(msd), name + '.yml'),'w') as ff:
@@ -271,6 +370,8 @@ class Example(Frame):
     ##        self._msd = msd
 
     def onSave(self):
+        if not self.sum_rkt():
+            return  False
         name = self._name_mt.get()
         name = name.lower()
         mt = {}
@@ -278,14 +379,23 @@ class Example(Frame):
         tt = [float(self._pv[i].get()) for i in range(self._n)]
         for i, pp in enumerate(tt):
             if pp > 0.0:
-                ##                sps.append([self._var[i].get(), pp])
-                sps.append([self._bt[i]['text'], pp])
+                nms = self._bt[i]['text']
+                print(nms)
+                ##                if self._bion:
+                if len(nms) > 0:
+                    cion = int(self._veion[i].get())
+                    print(cion)
+                    if cion > 0:
+                        sps.append([nms, pp, cion])
+                    else:
+                        sps.append([nms, pp])
 
         mt[name.upper()] = {'elem': sps, 'ro': float(self._ro.get())}
         ##        msd = askdirectory(initialdir=self._msd, title = u"Куда сохраните файл")
         msf = os.path.join(fixWindowsPath(self._msd), name + self._mat)
         ##        msf = asksaveasfilename(initialdir=self._msd, initialfile=msf, title = u"Сохраняем файл")
         if len(msf) > 1:
+            print(mt)
             cor.write_file(msf, mt)
 
     ##        print(msd)
@@ -297,6 +407,12 @@ class Example(Frame):
         flnm = askopenfilename(initialdir=self._msd, title="Выберите материал",
                                filetypes=[('Mat file', self._mat)])
         if len(flnm) > 5:
+            if '+' in flnm:
+                self._bion = True
+                self.showIon()
+            else:
+                self._bion = False
+                self.hideIon()
             self.initdata()
             ms = cor.Compozit(flnm, self._nu)
             print('read mat')
@@ -306,6 +422,7 @@ class Example(Frame):
                 self._var[i].set(mt[0])
                 self._bt[i]['text'] = mt[0]
                 self._pv[i].set(mt[1])
+                self._veion[i].set(mt[2])
 
         pass
 

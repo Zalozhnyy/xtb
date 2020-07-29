@@ -43,7 +43,7 @@ if Debug_:
 import kiadf.xxfun as xox
 import kiadf.phisconst as phis
 import kiadf.electron as el
-import Project_reader
+import Project_reader_tables
 
 import compoz_read as cord
 
@@ -232,11 +232,11 @@ def main(dp):
     print(fllog)
 
     par_dir = os.path.join(idir_, par_path(idir_))
-    part_list = Project_reader.DataParcer(par_dir).par_decoder()
-    move, io_brake, layers_numbers = Project_reader.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+    part_list = Project_reader_tables.DataParcer(par_dir).par_decoder()
+    move, io_brake, layers_numbers = Project_reader_tables.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
     cond_six = False
     lay_dir = os.path.join(idir_, lay_path(idir_))
-    _, co = Project_reader.DataParcer(lay_dir).lay_decoder()
+    _, co = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
     if any([i == 6 for i in co]):
         cond_six = True
 

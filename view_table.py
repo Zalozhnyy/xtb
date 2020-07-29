@@ -111,6 +111,7 @@ def plot_file(dp):
     tt_ = hp[4].split()
     ee_ = np.logspace(float(tt_[0]), float(tt_[1]), int(tt_[2]))
     ne_ = len(ee_)
+    ixe = range(1,ne_,(ne_//40+1))
 ##    lie_ = [1:ne_:(ne_//20+1)]
     opis_ = {}
     opis_['.23'] = {'ylabel':r'$\Sigma, \frac{см^2}{г}$', 'bxlog': True,
@@ -255,7 +256,7 @@ def plot_file(dp):
 
             fig_ += 1
 
-            xxp.xtable_plot(ee_[1:ne_:(ne_//20+1)], gg_, yy_, gr_name_ + "_table", bxlog = False, bylog = False,
+            xxp.xtable_plot(ee_[ixe], gg_, yy_[:,ixe], gr_name_ + "_table", bxlog = False, bylog = False,
                             ylabel = r'$cos(\theta)$', xlabel = r'$\xi$' )
             gsave(gr_name_ + "_table")
 
@@ -276,7 +277,7 @@ def plot_file(dp):
             Df_ = np.zeros((len(ee_), nn_ - 1))
             dfm_ = np.zeros((len(ee_), nn_ - 1))
             dem_ = np.zeros(( nn_, len(ee_) ))
-
+            eav = np.zeros_like(cav_)
             for i, e_ in enumerate(ee_):
                 dd_ = np.interp(tt_, yy_[:,i], gg_)
                 df_ = np.diff(dd_) / hh_
@@ -292,8 +293,9 @@ def plot_file(dp):
                 Df_[i,:] = df_
                 df_ /= np.max(np.abs(df_))
                 dfm_[i,:] = df_
+                eav[i] = e_ - e_ / (1. + (1. - cav_[i]) * e_/phis.E0 )
             fig_ +=1
-            xxp.xtable_polar(ee_[1:ne_:(ne_//20+1)], xt_, dfm_, gr_name_ + "_directrissa")
+            xxp.xtable_polar(ee_[ixe], xt_, dfm_[ixe,:], gr_name_ + "_directrissa")
             gsave(gr_name_ + "_directrissa")
             fig_ +=1
             xxp.xgraf_plot(ee_, cav_, gr_name_ + "_average", opis_[fext_] )
@@ -304,8 +306,13 @@ def plot_file(dp):
                 if fext_ in ['.iv']:
 ##                    Eph_ = e_ / (1. + (1. - yy_) * e_/phis.E0 )
 
-                    xxp.xtable_plot(ee_[1:ne_:(ne_//20+1)], gg_, dem_, gr_name_ + "_energy", bxlog = False, bylog = True,
+                    xxp.xtable_plot(ee_[ixe], gg_, dem_[:,ixe], gr_name_ + "_energy", bxlog = False, bylog = True,
                                 ylabel = r'$\varepsilon_{\gamma}$', xlabel = r'$\xi$' )
+                    opis_['.iv'] = {'legenda':(u'Средняя энергия фотона',),
+                     'ylabel':r'$\varepsilon_{\gamma}, эВ$', 'bxlog': True,
+                     'bylog':True, 'xlabel':r'$\varepsilon_{\gamma}, эВ$', 'place':'upper left'}
+                    xxp.xgraf_plot(ee_, eav, gr_name_ + "_ee_average", opis_[fext_] )
+                    gsave(gr_name_ + "_average")
             if fext_ in ['.cv'] :
                 fig_ +=1
                 xxp.xtable_plot(ee_[1:ne_:(ne_//20+1)], xt_, Df_,gr_name_ + "_energy", bxlog = False, bylog = False,
@@ -331,12 +338,12 @@ def plot_file(dp):
 
             fig_ += 1
             if fext_ in ['.527']:
-                xxp.xtable_plot(ee_[1:ne_:(ne_//20+1)], gg_, yy_, gr_name_+ '_table',
+                xxp.xtable_plot(ee_[ixe], gg_, yy_[:,ixe], gr_name_+ '_table',
                             ylabel = xproc_[fext_]['ylabel'], xlabel = xproc_[fext_]['xlabel'],
                             bxlog = False )
             else:
 
-                xxp.xtable_plot(ee_[1:ne_:(ne_//20+1)], gg_, yy_, gr_name_+ '_table',
+                xxp.xtable_plot(ee_[ixe], gg_, yy_[:,ixe], gr_name_+ '_table',
                                 ylabel = xproc_[fext_]['ylabel'], xlabel = xproc_[fext_]['xlabel'] )
             gsave(gr_name_+ '_table')
 
@@ -356,7 +363,7 @@ def plot_file(dp):
                         df_ /= np.max(abs(df_))
                     dfm_[i,:] = df_
                 fig_ += 1
-                xxp.xtable_polar(ee_[1:ne_:(ne_//20+1)], xt_, dfm_, gr_name_+ "_directrissa")
+                xxp.xtable_polar(ee_[ixe], xt_, dfm_[ixe,:], gr_name_+ "_directrissa")
                 gsave(gr_name_ + "_directrissa")
 
             cav_ = np.trapz(yy_, gg_, axis = 0)

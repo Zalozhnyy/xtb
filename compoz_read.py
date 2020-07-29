@@ -13,6 +13,7 @@
 
 import os
 import sys
+import json
 import yaml
 import numpy as np
 
@@ -98,7 +99,10 @@ def read_mat(nFile, mess={}):
                 elif tt[0].find('Element') > 0:
                     pp = float(tt[2])
                     mp += pp
-                    em.append([tt[1], pp])
+                    if len(tt) == 3:
+                        em.append([tt[1], pp])
+                    elif len(tt) == 4:
+                        em.append([tt[1], pp, int(tt[3])])
                 elif tt[0].find('Density') > 0:
                     ro = float(tt[1])
                 else:
@@ -161,13 +165,19 @@ class Compozit():
                     ##                    self.vv[env]=i
                     elif line.startswith('[' + 'Element' + ']'):
                         t = line.split()
-                        if t[1] in list(nmEl.keys()):
-                            vs_ = float(t[2])
-                            ss_ += vs_
-                            Mt.append([t[1], vs_])
+                        if t[1] in nmEl.keys():
+                            sn_ = t[1]
                         else:
-                            print(('В композите  %s - элемент %s ошибочен.' % (env, t[1])))
-                            exit(3)
+                            sn_ = ''
+                            print(u'В композите  %s - элемент %s ошибочен.' % (env, t[1]))
+                        vs_ = float(t[2])
+                        ss_ += vs_
+                        ion_ = 0
+                        if len(t) > 3:
+                            t3 = int(t[3])
+                            if t3 <= 2 and t3 > 0:
+                                ion_ = t3
+                        Mt.append([sn_, vs_, ion_])
                     elif line.startswith('[' + 'Shell' + ']'):
                         t = line.split()
                         Sh.append((int(t[1]), ip, t[2]))
@@ -228,9 +238,25 @@ def write_file(nfl, comp):
         for cp in sorted(comp.keys()):
             ff.write('[Composite]\t%s\n' % cp)
             for el in comp[cp]['elem']:
-                ff.write('[Element]\t%s\t%f\n' % (el[0], el[1]))
+                if len(el) == 3:
+                    ff.write('[Element]\t%s\t%f\t%d\n' % (el[0], el[1], el[2]))
+                else:
+                    ff.write('[Element]\t%s\t%f\n' % (el[0], el[1]) )
             ff.write('[Density]\t%f\n' % comp[cp]['ro'])
 
+
+def write_file_mat(nfl, mt):
+##    comp = self.conver()
+    with open(nfl,'w') as ff:
+        ff.write('[Composite]\t%s\n' % mt['Composite'])
+        for el in mt['Element']:
+            ss ='[Element]\t%s\t%f' % (el[0], el[1])
+            if len(el) == 3 and el[2] > 0:
+                ss += '\t%d\n' % (el[2])
+            else:
+                ss +='\n'
+            ff.write(ss)
+        ff.write('[Density]\t%f\n' % mt['Density'])
 
 def read_layer(ss, nmfl='layers', save=False):
     """

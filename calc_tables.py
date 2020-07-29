@@ -32,11 +32,16 @@ compz_ = 'compozits'
 
 
 def write_file_mat(nfl, mt):
-    ##    comp = self.conver()
-    with open(nfl, 'w') as ff:
+##    comp = self.conver()
+    with open(nfl,'w') as ff:
         ff.write('[Composite]\t%s\n' % mt['Composite'])
         for el in mt['Element']:
-            ff.write('[Element]\t%s\t%f\n' % (el[0], el[1]))
+            ss ='[Element]\t%s\t%f' % (el[0], el[1])
+            if len(el) == 3 and el[2] > 0:
+                ss += '\t%d\n' % (el[2])
+            else:
+                ss +='\n'
+            ff.write(ss)
         ff.write('[Density]\t%f\n' % mt['Density'])
 
 
@@ -56,7 +61,7 @@ def read_layer(ss, nmfl='layers'):
         with open(nf, 'r') as ff:
             lfn = ff.readlines()
     except IOError:
-        print(("такого файла наверное нет.\n%s" % nmfl))
+        print("такого файла наверное нет.\n%s" % nmfl)
         return []
     nv = []
     for lr in lfn:

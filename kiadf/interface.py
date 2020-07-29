@@ -174,13 +174,19 @@ class Object():
     ##                    self.vv[env]=i
                     elif line.startswith('['+'Element'+']'):
                         t=line.split()
-                        if t[1] in list(nmEl.keys()):
-                            vs_=float(t[2])
-                            ss_+=vs_
-                            Mt.append((t[1],vs_))
+                        if t[1] in nmEl.keys():
+                            sn_ = t[1]
                         else:
-                            print(('В композите  %s - элемент %s ошибочен.' % (env, t[1])))
-                            exit(3)
+                            sn_ = ''
+                            print('В композите  %s - элемент %s ошибочен.' % (env, t[1]))
+                        vs_ = float(t[2])
+                        ss_ += vs_
+                        ion_ = 0
+                        if len(t) > 3:
+                            t3 = int(t[3])
+                            if t3 <= 2 and t3 > 0:
+                                ion_ = t3
+                        Mt.append([sn_, vs_, ion_])
                     elif line.startswith('['+'Shell'+']'):
                         t=line.split()
                         Sh.append((int(t[1]),ip,t[2]))

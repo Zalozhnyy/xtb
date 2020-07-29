@@ -73,7 +73,7 @@ class electron(ken.Kendf):
 
 
     ## Функция инициализации класса electron
-    def __init__(self,xin):
+    def __init__(self,xin, xion=0):
         """ """
 #        import shelve
 
@@ -152,7 +152,7 @@ class electron(ken.Kendf):
         self.OutDirEndf=os.path.join(self.OutDir,'ENDF')
         self.xfile="e-"+"%03i" %(self.Z)+"_"+self.Name+"_000.endf"
         self.xDirFileElem=os.path.join(self.nmElData,self.xfile)
-        ken.Kendf.__init__(self,self.xfile, Elog_ = self.E_log)
+        ken.Kendf.__init__(self,self.xfile, Elog_ = self.E_log, ion=xion)
         self.xxDir=os.path.join(self.OutDir,
                     '%i'%(self.E_log[0])+ '_' + '%i'%(self.E_log[-1])+
                      '_' +'%i'%(len(self.E_log)))
@@ -1025,8 +1025,10 @@ def main(xI,Mt,matFile, path):
     for i,k in enumerate(spisok):
         name=k[0]
         p=k[1]
+        ion = k[2]
+        print (name, p, ion)
         xB=xI.def_element(name)
-        A=electron(xB)
+        A=electron(xB, xion=ion)
         aw_ += p * A.A
         zz_ += p * A.Z
         if i == 0:
