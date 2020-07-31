@@ -18,7 +18,6 @@
 
 import os
 import math
-import time
 import numpy as np
 #try:
 #    import matplotlib.pyplot as plt
@@ -27,12 +26,14 @@ import numpy as np
 #    xGraff=False#else:
 #    xGraff=True
 
-from kiadf  import interface as xItf
-from kiadf  import xxfun as xox
-from kiadf import endf as ken
+import interface as xItf
+import xxfun as xox
+import endf as ken
 
 #import xxplot as xxp
-from kiadf import phisconst as phis
+import phisconst as phis
+
+
 #from interface import xxInit
 
 

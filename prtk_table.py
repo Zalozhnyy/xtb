@@ -11,8 +11,7 @@
 #   - таблица средней энергии связи (.eb)
 #   - таблица энергии электрона при рождении электронно-позитронных пар (.516)
 
-import os, sys
-import time
+import os
 import shutil
 import numpy as np
 from functools import reduce
@@ -40,9 +39,8 @@ if Debug_:
                 'weight': 'normal'}
         rc('font', **font)
 
-import kiadf.xxfun as xox
-import kiadf.phisconst as phis
-import kiadf.electron as el
+import xxfun as xox
+import phisconst as phis
 import Project_reader_tables
 
 import compoz_read as cord

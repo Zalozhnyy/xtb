@@ -9,16 +9,11 @@
 
 import re
 import os
-import sys
-import math
 import zipfile as z
-import math
-
-from scipy import integrate
 
 import numpy as np
-from kiadf import phisconst as phis
-from kiadf import ion_pkl as ionp
+import phisconst as phis
+import ion_pkl as ionp
 
 try:
     import matplotlib.pyplot as plt
@@ -31,8 +26,6 @@ else:
     font = {'family': 'Verdana',
             'weight': 'normal'}
     rc('font', **font)
-
-from kiadf import xxplot as xxp
 
 TypeParticle = []
 

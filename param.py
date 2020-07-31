@@ -19,7 +19,7 @@ golb = """
 electron: true
 photon: true
 mat: mat_files
-par: parameters.ini
+par: xrb_parameters.ini
 """
 
 

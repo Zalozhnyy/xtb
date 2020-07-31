@@ -31,10 +31,10 @@ import numpy as np
 
 xGraf = not False
 
-from kiadf import xxfun as xox
-from kiadf import interface as xItf
-from kiadf import phisconst as phis
-from kiadf import endf as ken
+import xxfun as xox
+import interface as xItf
+import phisconst as phis
+import endf as ken
 
 ##import para_photon as par
 
@@ -495,7 +495,7 @@ class photon(ken.Kendf):
 def main(xI, Mt, matFile, path):
     """
     """
-    from kiadf import para_photon as para
+    import para_photon as para
     print((os.getcwd()))
     ##    path,nmFile = os.path.split(matFile)
     ##    path = os.getcwd()
