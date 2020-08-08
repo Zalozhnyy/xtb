@@ -106,7 +106,7 @@ class Example(Frame):
         menubar.add_command(label="Помощь", underline=0, command=self.help)
         i = 0
         Label(self.parent, text='Материал', width=15).grid(row=0, column=0)
-        Label(self.parent, text='Плотность гр/см\u00b3').grid(row=0, column=1)
+        Label(self.parent, text='Плотность г/см\u00b3').grid(row=0, column=1)
         Label(self.parent, text='Номера слоёв').grid(row=0, column=2)
         ##        Entry(self.parent, text='Номера слоёв').grid(row=0, column=3)
         for i in range(self._n):
