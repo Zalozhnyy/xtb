@@ -12,10 +12,9 @@
 #!/usr/bin/env python
 
 import os, sys
-import  time
 
 import numpy as np
-from kiadf import  xxplot as xxp
+import xxplot as xxp
 
 ##try:
 ##    import matplotlib.pyplot as plt
@@ -29,9 +28,10 @@ from kiadf import  xxplot as xxp
 ##    rc('font', **font)
 
 
-from kiadf import xxfun as xox
+import xxfun as xox
 
-from kiadf import phisconst as phis
+import phisconst as phis
+
 
 def module_path():
     """ """

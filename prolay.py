@@ -6,15 +6,14 @@
 # фотонов и электронов при их взаимодействии с веществом
 #-------------------------------------------------------------------------------
 
-import os, sys
+import os
 import  time
-import math
 import numpy as np
 
-import kiadf.electron as xEl
-import kiadf.interface as xItf
-import kiadf.photon as xPh
-import kiadf.phisconst as phis
+import xtb_electron as xEl
+import interface as xItf
+import xtb_photon as xPh
+import phisconst as phis
 
 bPhoton = True
 bElectron = True

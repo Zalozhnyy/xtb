@@ -6,13 +6,12 @@
 #-------------------------------------------------------------------------------
 
 import os
-import sys
 import numpy as np
 
-import kiadf.xxfun as xox
-import kiadf.phisconst as phis
-import kiadf.interface as xItf
-import kiadf.xxplot as xxp
+import xxfun as xox
+import phisconst as phis
+import interface as xItf
+import xxplot as xxp
 
 
 xloc_ = {}

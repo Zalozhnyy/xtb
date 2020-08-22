@@ -16,6 +16,8 @@ import sys
 import json
 import yaml
 import numpy as np
+from tkinter import filedialog as fd
+from tkinter import messagebox as mb
 
 
 def read_elements(ss):
@@ -234,29 +236,47 @@ def write_file_yaml(nfl, dmt):
 
 def write_file(nfl, comp):
     ##    comp = self.conver()
-    with open(nfl, 'w') as ff:
-        for cp in sorted(comp.keys()):
-            ff.write('[Composite]\t%s\n' % cp)
-            for el in comp[cp]['elem']:
-                if len(el) == 3:
-                    ff.write('[Element]\t%s\t%f\t%d\n' % (el[0], el[1], el[2]))
-                else:
-                    ff.write('[Element]\t%s\t%f\n' % (el[0], el[1]) )
-            ff.write('[Density]\t%f\n' % comp[cp]['ro'])
+    try:
+        ff = open(nfl, 'w')
+    except PermissionError:
+        mb.showerror('Недостаточно прав',
+                     f'Сохранение в директорию {nfl} невозможно из-за отсутствия прав.\n'
+                     f'Выберите другую директорию и перенесите файл вручную.')
+
+        path = fd.asksaveasfilename(defaultextension='.mrat', filetypes=[('mrat files', '.mrat')])
+        if path == '' or path is None:
+            return
+        ff = open(path, 'w')
+
+    except:
+        mb.showerror('Неизвестная ошибка', 'Сохранение не удалось по неизвестной причине')
+        return
+
+    for cp in sorted(comp.keys()):
+        ff.write('[Composite]\t%s\n' % cp)
+        for el in comp[cp]['elem']:
+            if len(el) == 3:
+                ff.write('[Element]\t%s\t%f\t%d\n' % (el[0], el[1], el[2]))
+            else:
+                ff.write('[Element]\t%s\t%f\n' % (el[0], el[1]))
+        ff.write('[Density]\t%f\n' % comp[cp]['ro'])
+
+    ff.close()
 
 
 def write_file_mat(nfl, mt):
-##    comp = self.conver()
-    with open(nfl,'w') as ff:
+    ##    comp = self.conver()
+    with open(nfl, 'w') as ff:
         ff.write('[Composite]\t%s\n' % mt['Composite'])
         for el in mt['Element']:
-            ss ='[Element]\t%s\t%f' % (el[0], el[1])
+            ss = '[Element]\t%s\t%f' % (el[0], el[1])
             if len(el) == 3 and el[2] > 0:
                 ss += '\t%d\n' % (el[2])
             else:
-                ss +='\n'
+                ss += '\n'
             ff.write(ss)
         ff.write('[Density]\t%f\n' % mt['Density'])
+
 
 def read_layer(ss, nmfl='layers', save=False):
     """

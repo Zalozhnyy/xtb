@@ -81,7 +81,6 @@ def set_ion(zi, bb, elem ='O'):
     fp = os.path.normpath(os.path.join(cdir, "ions_files.zip"))
     if z.is_zipfile(fp):
         fl_ = z.ZipFile(fp,'r')
-        print(fl_.printdir())
         try:
             ##            dp = pickle.load(open(nfile))
             sf = fl_.extract(nfile)

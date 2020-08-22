@@ -23,8 +23,7 @@ else:
 
 ##iPlot=False
 
-from kiadf import xxfun as xox
-
+import xxfun as xox
 
 iEnglish_ = False
 

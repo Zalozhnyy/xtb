@@ -56,7 +56,7 @@ class Example(Frame):
         self._db = db
         if len(list(db.keys())) == 0:
             path = os.path.dirname(__file__)
-            flnm = 'parameters.ini'
+            flnm = 'xrb_parameters.ini'
 
         else:
             flnm = db['par']
@@ -174,7 +174,7 @@ class Example(Frame):
         for i, key in enumerate(self._xKey):
             sps[key] = self._var[i].get()
 
-        ##        msf = asksaveasfilename(initialdir=os.getcwd(),  initialfile='parameters.ini', title = u"Куда сохраните файл",
+        ##        msf = asksaveasfilename(initialdir=os.getcwd(),  initialfile='xrb_parameters.ini', title = u"Куда сохраните файл",
         ##                        filetypes = [('Параметр файл','.ini')])
         ##        if len(msf) > 1:
         ##            with open(msf,'w') as ff:

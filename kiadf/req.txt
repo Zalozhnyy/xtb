@@ -1,9 +1,0 @@
-electron.py
-endf.py
-interface.py
-para_photon.py
-phisconst.py
-photon.py
-xxfun.py
-xxplot.py
-__init__.py

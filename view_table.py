@@ -9,19 +9,14 @@
 
 version = '0.5.2'
 
-import os, sys
-import  time
+import os
 # import argparse
 
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.ticker
 
-import glob
-
-import kiadf.xxfun as xox
-import kiadf.phisconst as phis
-import kiadf.xxplot as xxp
+import xxfun as xox
+import phisconst as phis
+import xxplot as xxp
 
 
 from  sys import version_info
@@ -29,13 +24,9 @@ from  sys import version_info
 v=version_info[0]
 if v==3:
     from tkinter import *                          # get widget classes
-    from tkinter.messagebox import askokcancel     # get canned std dialog
     from tkinter.filedialog import askopenfilename
 else:
     from tkinter import *                          # get widget classes
-    from tkinter.messagebox import askokcancel     # get canned std dialog
-
-    from tkinter.filedialog import askopenfilename,askdirectory
 
 from tkinter.filedialog import askopenfilename
 

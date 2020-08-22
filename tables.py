@@ -453,8 +453,13 @@ class Example(Frame):
 
     def onExit(self):
         ##        self.onSave()
+
         self._parent.quit()
         self._parent.destroy()
+
+        if os.path.dirname(__file__) in sys.path:
+            sys.path.pop(sys.path.index(os.path.dirname(__file__)))
+
 
     def onEditMat(self):
         dp = {'mat': self._plc_mat.get()}

@@ -6,10 +6,9 @@
 #    - считывает файл parameter.ini
 #    - считывает файл compozits
 
-import os,sys
+import os
 import math
-from kiadf import phisconst as phis
-
+import phisconst as phis
 
 
 ## Программа считывает информацию из файла elements

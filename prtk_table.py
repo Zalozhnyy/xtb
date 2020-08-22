@@ -11,8 +11,7 @@
 #   - таблица средней энергии связи (.eb)
 #   - таблица энергии электрона при рождении электронно-позитронных пар (.516)
 
-import os, sys
-import time
+import os
 import shutil
 import numpy as np
 from functools import reduce
@@ -40,9 +39,8 @@ if Debug_:
                 'weight': 'normal'}
         rc('font', **font)
 
-import kiadf.xxfun as xox
-import kiadf.phisconst as phis
-import kiadf.electron as el
+import xxfun as xox
+import phisconst as phis
 import Project_reader_tables
 
 import compoz_read as cord
@@ -54,11 +52,11 @@ parot_ = {}
 parot_['.xer'] = {'name_out': 'FBB_E_'}
 parot_['.xer']['data'] = ' {0:<12.4E}   {1:<12.4E}   {2:<12.4E}\n'
 parot_['.xer']['head'] = """\
-Сила торможения электронов в {material}
+Сила торможения электронов в {material} ro = {density}
 Число строк данных
  {nE}
 
-Энергия(МЭВ) Торм полн(MeV/см) Торм без рад(МэВ/см)""" + "\n"
+Энергия(МэВ) Торм полн(МэВ/см) Торм в ионизированном воздухе(МэВ/см)""" + '\n'
 
 parot_['.528'] = {'name_out': '_EXC_'}
 parot_['.528']['data'] = ' {0:<12.5E}   {1:<12.5E}       {2:<12.5E}\n'
@@ -280,11 +278,23 @@ def main(dp):
         xer_ = Ro_ * np.power(10, xer_[:, 1:]) * 10 ** (-6)
         ttl_ = np.sum(xer_, axis=1)
         ttl_st_ = ttl_ - xer_[:, -1]
-        vz_ = zip(E_, ttl_, ttl_st_)
         ff_ = parot_[key_]['name_out']
+
+        if mat_ == 'air' or mat_ == 'vozduch':
+            pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
+
+            data, ro_pat = example_fbb_file_reader(pattern_file_path)
+            data = data * Ro_ / ro_pat
+
+            vz_ = zip(E_, ttl_, data)
+
+        else:
+            vz_ = zip(E_, ttl_, ttl_st_)
+
+        # данные по шаманству fbb тут нужная строка в vz_[2]
         if np.any(io_brake_dict.get(int(imat))[:] == 1):
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, density=Ro_))
                 for v_ in vz_:
                     out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
             copy_file(idir_, ff_, dly[(mat_, Ro_)])
@@ -544,40 +554,54 @@ def create_parser():
     return parser
 
 
+def example_fbb_file_reader(path):
+    data = np.loadtxt(path, skiprows=5,dtype=float)
+
+    with open(path, 'r') as file:
+        line = file.readline()
+
+    ro = float(line.strip().split('=')[-1])
+
+    return data[:,2], ro
+
+
 if __name__ == '__main__':
-    import yaml
-
-    nG_ = 21
-
-    file_name = os.path.join(os.path.dirname(__file__), 'config.yml')
-    ff = open(file_name, 'r')
-    bd = yaml.load(ff)
-
-    print(u'пересчитываем таблицы')
-    main(bd)
-    exit(0)
-
-    try:
-        import argparse
-        import textwrap
-        import yaml
-
-        parser = create_parser()
-        args_ = vars(parser.parse_args())
-        nG_ = args_['Nxi']
-        name_file_ = args_['file']
-        #        print(args_)
-        file_name = os.path.join(os.path.dirname(__file__), 'config.yml')
-        ff = open(file_name, 'r')
-        bd = yaml.load(ff)
-
-        print(u'пересчитываем таблицы')
-        main(bd)
-    except ImportError:
-        print(u"Старый Питон")
-        main(bd)
-        pass
-    else:
-        pass
-    finally:
-        pass
+    pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
+    a,b =example_fbb_file_reader(pattern_file_path)
+    print(a,b)
+# import yaml
+#
+# nG_ = 21
+#
+# file_name = os.path.join(os.path.dirname(__file__), 'config.yml')
+# ff = open(file_name, 'r')
+# bd = yaml.load(ff)
+#
+# print(u'пересчитываем таблицы')
+# main(bd)
+# exit(0)
+#
+# try:
+#     import argparse
+#     import textwrap
+#     import yaml
+#
+#     parser = create_parser()
+#     args_ = vars(parser.parse_args())
+#     nG_ = args_['Nxi']
+#     name_file_ = args_['file']
+#     #        print(args_)
+#     file_name = os.path.join(os.path.dirname(__file__), 'config.yml')
+#     ff = open(file_name, 'r')
+#     bd = yaml.load(ff)
+#
+#     print(u'пересчитываем таблицы')
+#     main(bd)
+# except ImportError:
+#     print(u"Старый Питон")
+#     main(bd)
+#     pass
+# else:
+#     pass
+# finally:
+#     pass

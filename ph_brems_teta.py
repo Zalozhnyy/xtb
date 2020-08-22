@@ -6,16 +6,16 @@
 # при взаимодействии электрона с веществом
 #-------------------------------------------------------------------------------
 
-import os, sys
+import os
 ##import  time
 
 import numpy as np
-import kiadf.xxfun as xox
-import kiadf.interface as xItf
-import kiadf.xxplot as xxp
+import xxfun as xox
+import interface as xItf
+import xxplot as xxp
 
 
-import kiadf.phisconst as phis
+import phisconst as phis
 
 bFile_ = True
 bGraf_ = False

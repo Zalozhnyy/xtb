@@ -6,20 +6,13 @@
 # фотонов и электронов при их взаимодействии с веществом
 # -------------------------------------------------------------------------------
 
-import os, sys
-import time
-import math
+import os
 import numpy as np
 import yaml
 
-from multiprocessing.dummy import Process
-
-import kiadf.phisconst as phis
-import kiadf.interface as xItf
-import kiadf.electron as xel
-import kiadf.photon as xph
-
-from tkinter import messagebox as mb
+import interface as xItf
+import xtb_electron as xel
+import xtb_photon as xph
 
 import cfg
 
