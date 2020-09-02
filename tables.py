@@ -137,10 +137,16 @@ def pech_existance(pr_path):
                 return os.path.join(pr_path, pech_name)
             else:
                 pech_dir = pech_ask(path)
-                return os.path.normpath(pech_dir)
+                if pech_dir == -1:
+                    return -1
+                else:
+                    return os.path.normpath(pech_dir)
         else:
             pech_dir = pech_ask(path)
-            return os.path.normpath(pech_dir)
+            if pech_dir == -1:
+                return -1
+            else:
+                return os.path.normpath(pech_dir)
     elif True:
         pech_dir = pech_ask(path)
         return os.path.normpath(pech_dir)
@@ -443,6 +449,14 @@ class Example(Frame):
         self._btpr['state'] = NORMAL
         self._btpr1['state'] = NORMAL
 
+        materials_path = os.path.join(self._bd['proj'], 'materials')
+
+        try:
+            shutil.rmtree(materials_path)
+        except:
+            pass
+        shutil.copytree(self._bd['tab'], os.path.join(self._bd['proj'], 'materials'))
+
     def onCalcRmp(self):
         """ """
         Process(target=xrun, args=('prtk_table', self._bd)).start()
@@ -459,7 +473,6 @@ class Example(Frame):
 
         if os.path.dirname(__file__) in sys.path:
             sys.path.pop(sys.path.index(os.path.dirname(__file__)))
-
 
     def onEditMat(self):
         dp = {'mat': self._plc_mat.get()}

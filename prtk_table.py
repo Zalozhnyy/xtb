@@ -281,7 +281,9 @@ def main(dp):
         ff_ = parot_[key_]['name_out']
 
         if mat_ == 'air' or mat_ == 'vozduch':
-            pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
+            # pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
+            pattern_file_path = os.path.join(os.path.abspath(__file__), r'mat_files\FBB_example')
+            pattern_file_path = os.path.normpath(pattern_file_path)
 
             data, ro_pat = example_fbb_file_reader(pattern_file_path)
             data = data * Ro_ / ro_pat
@@ -555,20 +557,20 @@ def create_parser():
 
 
 def example_fbb_file_reader(path):
-    data = np.loadtxt(path, skiprows=5,dtype=float)
+    data = np.loadtxt(path, skiprows=5, dtype=float)
 
     with open(path, 'r') as file:
         line = file.readline()
 
     ro = float(line.strip().split('=')[-1])
 
-    return data[:,2], ro
+    return data[:, 2], ro
 
 
 if __name__ == '__main__':
     pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
-    a,b =example_fbb_file_reader(pattern_file_path)
-    print(a,b)
+    a, b = example_fbb_file_reader(pattern_file_path)
+    print(a, b)
 # import yaml
 #
 # nG_ = 21
