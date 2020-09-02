@@ -282,7 +282,7 @@ def main(dp):
 
         if mat_ == 'air' or mat_ == 'vozduch':
             # pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
-            pattern_file_path = os.path.join(os.path.abspath(__file__), r'mat_files\FBB_example')
+            pattern_file_path = os.path.join(os.path.dirname(__file__), r'mat_files\FBB_example')
             pattern_file_path = os.path.normpath(pattern_file_path)
 
             data, ro_pat = example_fbb_file_reader(pattern_file_path)
@@ -513,7 +513,7 @@ def main(dp):
         p_rr_[:, -1] = xeb_
         vz_ = zip(E_, cs_el_[:, 3])
         ff_ = parot_[key_]['name_out']  # _ION_
-        if ff_ in exist_dict.keys():
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, Emin=E_[0], nG=nG_))
