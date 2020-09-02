@@ -281,11 +281,15 @@ def main(dp):
         ff_ = parot_[key_]['name_out']
 
         if mat_ == 'air' or mat_ == 'vozduch':
-            # pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
-            pattern_file_path = os.path.join(os.path.dirname(__file__), r'mat_files\FBB_example')
-            pattern_file_path = os.path.normpath(pattern_file_path)
+            try:
+                pattern_file_path = os.path.join(os.path.dirname(__file__), r'mat_files\FBB_example')
+                pattern_file_path = os.path.normpath(pattern_file_path)
+                data, ro_pat = example_fbb_file_reader(pattern_file_path)
 
-            data, ro_pat = example_fbb_file_reader(pattern_file_path)
+            except PermissionError:
+                print('Недостаточно прав запустите от имени администратора')
+                return
+
             data = data * Ro_ / ro_pat
 
             vz_ = zip(E_, ttl_, data)
@@ -559,7 +563,7 @@ def create_parser():
 def example_fbb_file_reader(path):
     data = np.loadtxt(path, skiprows=5, dtype=float)
 
-    with open(path, 'r') as file:
+    with open(path, 'r', encoding='cp1251') as file:
         line = file.readline()
 
     ro = float(line.strip().split('=')[-1])
@@ -568,7 +572,7 @@ def example_fbb_file_reader(path):
 
 
 if __name__ == '__main__':
-    pattern_file_path = r'C:\Users\Nick\Dropbox\work_cloud\xtb\mat_files\FBB_example'
+    pattern_file_path = r'C:\Windows\System32\FBB_example'
     a, b = example_fbb_file_reader(pattern_file_path)
     print(a, b)
 # import yaml
