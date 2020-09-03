@@ -192,26 +192,10 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     prc = [ff.split('_')[1] for ff in nf]
 
 
-    cond_six = False
-    lay_dir = os.path.join(dir, lay_path(dir))
-    _, co = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
-    if any([i == 6 for i in co]):
-        cond_six = True
-
     for i in im:
         ie = '{0:03d}'.format(i)
         for pp in prc:
-            if pp == 'ION' and cond_six:
-                f_old = '_' + pp + '_' + mt
-                fsp = os.path.join(fs, f_old)
-                ls = prt[pp](fsp, kf)
-                f_new = '_' + pp + '_' + ie
-                fd = os.path.join(dir, f_new)
-                dg.write(' {0} => {1} \n'.format(f_old, f_new))
-                with open(fd, 'w') as ff:
-                    ff.writelines(ls)
-
-            elif f'_{pp}_' in exist_list.keys():
+            if f'_{pp}_' in exist_list.keys():
                 if int(exist_list.get(f'_{pp}_')) != 0:
                     f_old = '_' + pp + '_' + mt
                     fsp = os.path.join(fs, f_old)
