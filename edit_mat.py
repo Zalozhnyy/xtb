@@ -123,7 +123,7 @@ class Example(Frame):
         self._pv = [StringVar(master=parent) for id in range(self._n)]
         self._name_mt = StringVar(parent, db.get('name', 'MATERIAL'))
         self._ro = StringVar(parent)
-        self._ro.set(0.0)
+        self._ro.set(1.0)
         self._nelm = 100
         self._dmt = self.read_elements()[0]
         self.initMenu()
@@ -190,10 +190,10 @@ class Example(Frame):
         self._name_comp.bind('<FocusOut>', self.tblIon)
         self._name_comp.grid(row=i, column=1, padx=1, ipady=0, pady=0, sticky=W + E)
         i += 1
-        Label(frame_, text='Плотность').grid(row=i, column=0)
-        ro = Entry(frame_, textvariable=self._ro, relief=SUNKEN,
-                   justify=RIGHT).grid(row=i, column=1, padx=0, ipady=0, pady=1, sticky=W + E)
-        i += 1
+        # Label(frame_, text='Плотность').grid(row=i, column=0)
+        # ro = Entry(frame_, textvariable=self._ro, relief=SUNKEN, state='disabled',
+        #            justify=RIGHT).grid(row=i, column=1, padx=0, ipady=0, pady=1, sticky=W + E)
+        # i += 1
         Label(frame_, text='Хим. элемент').grid(row=i, column=0)
         Label(frame_, text='Массовая Доля').grid(row=i, column=1)
 
