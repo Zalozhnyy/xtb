@@ -81,16 +81,16 @@ def xxmkdir(drname):
 
 
 def pech_open_dir(path):
-    messagebox.showwarning('Path error', 'Не обнаружена папка проекта pechs.\n'
-                                         'Выберите директорию pechs вручную')
-    pech_path = fd.askdirectory(title='Выберите директорию pechs',
+    messagebox.showwarning('Path error', 'Не обнаружена папка проекта переноса.\n'
+                                         'Выберите директорию переноса вручную')
+    pech_path = fd.askdirectory(title='Выберите директорию проекта переноса',
                                 initialdir=path)
     if pech_path == '':
         return -1
     if 'configuration' in os.listdir(pech_path):
         return os.path.abspath(pech_path)
     else:
-        messagebox.showwarning('Path error', 'Папка не является проектом pechs (Не обнаружен файл configuration.)')
+        messagebox.showwarning('Path error', 'Папка не является проектом переноса (Не обнаружен файл configuration.)')
         ask = messagebox.askyesno('Выбрать другую папку?', 'Выбрать другую папку?')
         if ask is True:
             pech_open_dir(path)
@@ -99,9 +99,9 @@ def pech_open_dir(path):
 
 
 def pech_ask(path):
-    ask_pe = messagebox.askyesno('Проект pechs', 'В расчёте нужен проект pechs?.\n'
-                                                 'да - указать путь к проекту pechs\n'
-                                                 'нет - продолжить без проекта pechs')
+    ask_pe = messagebox.askyesno('Проект переноса', 'В расчёте нужен проект переноса?.\n'
+                                                 'да - указать путь к проекту переноса\n'
+                                                 'нет - продолжить без проекта переноса')
     if ask_pe is True:
         pech_dir = pech_open_dir(path)
         if pech_dir == -1:
@@ -627,6 +627,20 @@ class Example(Frame):
 
 if __name__ == '__main__':
     # xdialog()
+
+    try:
+        test_file = os.path.join(os.path.dirname(__file__), 'permission_denied_test')
+
+        with open(test_file, 'w') as file:
+            file.write('test strig')
+
+    except PermissionError:
+        messagebox.showerror('Предупреждение', 'Программа не имеет доступа к файловой системе.\n'
+                                               'Запустите программу от имени администратора')
+
+    finally:
+        if os.path.exists(test_file):
+            os.remove(test_file)
 
     er = Tk()
     ##    er.overrideredirect(True)

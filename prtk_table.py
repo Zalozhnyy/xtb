@@ -282,7 +282,7 @@ def main(dp):
 
         if mat_ == 'air' or mat_ == 'vozduch':
             try:
-                pattern_file_path = os.path.join(os.path.dirname(__file__), r'mat_files\FBB_example')
+                pattern_file_path = os.path.join(os.path.dirname(__file__), r'Example_files\FBB_example')
                 pattern_file_path = os.path.normpath(pattern_file_path)
                 data, ro_pat = example_fbb_file_reader(pattern_file_path)
 
@@ -325,7 +325,7 @@ def main(dp):
         xv_ = sl_c * np.sqrt(1.0 - (1. / xg_) ** 2)
         vz_ = zip(E_, xt_ * xv_)
         ff_ = parot_[key_]['name_out']
-        if ff_ in exist_dict.keys():
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
@@ -397,7 +397,7 @@ def main(dp):
         p_rr_ = np.power(10, p_rr_) * 10 ** (-6)
         vz_ = zip(E_, cs_el_[:, 1])
         ff_ = parot_[key_]['name_out']  # _BRM_
-        if ff_ in exist_dict.keys():
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
@@ -421,7 +421,7 @@ def main(dp):
         eb_ph_ = eb_ph_[:, -1] * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, -1], eb_ph_)
         ff_ = parot_[key_]['name_out']  # _FOT_
-        if ff_ in exist_dict.keys():
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, bE=eb_ph_[-1]))
@@ -440,7 +440,7 @@ def main(dp):
             p_ive_[k_, :] = np.interp(gg_, gamma_, ive_[k_, :]) * 10 ** (-6)
         vz_ = zip(E_, cs_ph_[:, 2])
         ff_ = parot_[key_]['name_out']  # _KOM_
-        if ff_ in exist_dict.keys():
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
@@ -467,7 +467,7 @@ def main(dp):
         p_rr_[i_rr_] = 0.0
         vz_ = zip(E_, cs_ph_[:, 3])
         ff_ = parot_[key_]['name_out']  # _PAR_
-        if ff_ in exist_dict.keys():
+        if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))

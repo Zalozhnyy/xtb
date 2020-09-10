@@ -180,7 +180,6 @@ def read_ro(fl):
     return ro
 
 
-
 def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     fs = os.path.join(dirin, mt)
     fl = os.path.join(fs, 'RO_' + mt)
@@ -191,23 +190,40 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     nf = [os.path.split(ff)[-1] for ff in tt]
     prc = [ff.split('_')[1] for ff in nf]
 
+    cond_six = False
+    lay_dir = os.path.join(dir, lay_path(dir))
+    _, co = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
+    if any([i == 6 for i in co]):
+        cond_six = True
 
-    for i in im:
-        ie = '{0:03d}'.format(i)
-        for pp in prc:
-            if f'_{pp}_' in exist_list.keys():
-                if int(exist_list.get(f'_{pp}_')) != 0:
-                    f_old = '_' + pp + '_' + mt
-                    fsp = os.path.join(fs, f_old)
-                    ls = prt[pp](fsp, kf)
-                    f_new = '_' + pp + '_' + ie
-                    fd = os.path.join(dir, f_new)
-                    dg.write(' {0} => {1} \n'.format(f_old, f_new))
-                    with open(fd, 'w') as ff:
-                        ff.writelines(ls)
-        pass
+    if cond_six is True:
+        for i in im:
+            ie = '{0:03d}'.format(i)
+            for pp in prc:
 
-    pass
+                f_old = '_' + pp + '_' + mt
+                fsp = os.path.join(fs, f_old)
+                ls = prt[pp](fsp, kf)
+                f_new = '_' + pp + '_' + ie
+                fd = os.path.join(dir, f_new)
+                dg.write(' {0} => {1} \n'.format(f_old, f_new))
+                with open(fd, 'w') as ff:
+                    ff.writelines(ls)
+
+    elif cond_six is False:
+        for i in im:
+            ie = '{0:03d}'.format(i)
+            for pp in prc:
+                if f'_{pp}_' in exist_list.keys():
+                    if int(exist_list.get(f'_{pp}_')) != 0:
+                        f_old = '_' + pp + '_' + mt
+                        fsp = os.path.join(fs, f_old)
+                        ls = prt[pp](fsp, kf)
+                        f_new = '_' + pp + '_' + ie
+                        fd = os.path.join(dir, f_new)
+                        dg.write(' {0} => {1} \n'.format(f_old, f_new))
+                        with open(fd, 'w') as ff:
+                            ff.writelines(ls)
 
 
 def par_path(initial_dir):
@@ -216,12 +232,12 @@ def par_path(initial_dir):
             path = f
     return path
 
+
 def lay_path(initial_dir):
     for f in os.listdir(initial_dir):
         if f.endswith(".LAY") or f.endswith(".LAY"):
             path = f
     return path
-
 
 
 ## Функция для пересчета таблиц
@@ -252,7 +268,6 @@ def main(dp):
     move_dict = {}
     for i in range(layers_numbers.shape[0]):
         move_dict.update({layers_numbers[i]: move[:, i]})
-
 
     # print(exist_dict)
 

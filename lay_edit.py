@@ -55,7 +55,9 @@ class Example(Frame):
         Frame.__init__(self, parent)
         self.parent = parent
         self.mw = mw
-        self.focus_set()
+
+        self.parent.grab_set()
+
         self.parent.protocol("WM_DELETE_WINDOW", self.onExit)
         self._n = cfg.val.nrlay
         self._mat = '.' + cfg.val.extmat
@@ -233,7 +235,45 @@ class Example(Frame):
             self._nmat[val]['fg'] = '#080'
             self._exist_mat[val] = True
 
+    def onCheckOnSaved(self):
+
+        sps = []
+        for i in range(self._n):
+            if len(self._ro[i].get()) == 0 or self._nmat[i]['text'] == '_':
+                continue
+            if self._exist_mat[i] is False:
+                showerror('Mat error', 'Выбраны не все мат файлы')
+                return 1
+            ro = float(self._ro[i].get())
+            if ro > 0.0:
+                nmat = self._var[i].get()
+                ls = self._pv[i].get()
+                ls = ls.replace('[', '').replace(']', '').replace('(', '').replace(')', '').replace('{', '').replace(
+                    '}', '')
+                ls = ls.replace(',', '').replace('.', '').replace(';', '').replace(':', '')
+                ##                ls = ls.replace(']','')
+                tt = (ls.split())
+                for k in tt:
+                    sps.append([int(k), nmat, ro])
+
+            current_in_program = []
+            for ls in sps:
+                current_in_program.append('{0:d}\t{1:s}\t{2:f}\n'.format(ls[0], ls[1], ls[2]))
+
+            with open(self._db['lay'], 'r') as ff:
+                current_in_save_file = ff.readlines()
+
+            if current_in_program == current_in_save_file:
+                return True
+
     def onExit(self):
+
+        already_saved = self.onCheckOnSaved()
+
+        if already_saved is True:
+            self.parent.destroy()
+            return
+
         answer = askyesno(title="Сохранение файла", message="Сохранить файл?")
         if answer is True:
             check = self.onSave()
@@ -400,10 +440,10 @@ def main(db, mw):
 
 if __name__ == '__main__':
     dp = {}
-    flnm = os.path.join(os.path.dirname(__file__), 'config.yml')
-    try:
-        dp = yaml.load(open(flnm, 'rt'))
-    except:
-        pass
+    # flnm = os.path.join(os.path.dirname(__file__), 'config.yml')
+    # try:
+    #     dp = yaml.load(open(flnm, 'rt'))
+    # except:
+    #     pass
     main(dp)
     pass
