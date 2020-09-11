@@ -19,8 +19,12 @@ import glob
 import yaml
 import locale
 
+import numpy as np
+
 import compoz_read as cord
 import Project_reader_tables
+
+from prtk_table import set_example_section
 
 ## Функция для считывания материалов, для которых
 # необходимо пересчитать таблицы
@@ -165,8 +169,34 @@ def ff_rot(fl, kf):
     return fs
 
 
+def ff_elt(fl, kf):
+    with open(fl, 'r', encoding='utf-8') as infl:
+        ls = infl.readlines()
+
+    description = ls[:10]
+
+    fs = description
+
+    array = []
+    for ll in ls[10:]:
+        array.append(ll.strip().split())
+
+    array = np.array(array, dtype=float)
+
+    for i in range(array.shape[0]):
+        string = '{:6.5E}  {:6.5E}  '.format(array[i, 0], array[i, 1] * kf)
+        fu = ''
+        for j in range(2, array.shape[1]):
+            fu += '{:6.5E}'.format(array[i, j]) + '  '
+
+        fs.append(string + fu + '\n')
+
+    return fs
+
+
 prt = {'ELA': ff_ela, 'EXC': ff_exc, 'ION': ff_ion,
-       'ROT': ff_rot, 'ATT': ff_att, 'REC': ff_rec}
+       'ROT': ff_rot, 'ATT': ff_att, 'REC': ff_rec,
+       'ELT': ff_elt}
 
 
 def read_ro(fl):
@@ -190,52 +220,48 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     nf = [os.path.split(ff)[-1] for ff in tt]
     prc = [ff.split('_')[1] for ff in nf]
 
-    cond_six = False
     lay_dir = os.path.join(dir, lay_path(dir))
-    _, co = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
-    if any([i == 6 for i in co]):
-        cond_six = True
+    layers_data, conductivity = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
 
-    if cond_six is True:
-        for i in im:
-            ie = '{0:03d}'.format(i)
-            for pp in prc:
+    lay_conductivity_dict = {}
+    for i in range(len(layers_data)):
+        lay_conductivity_dict.update({int(layers_data[i][0]): conductivity[i]})
 
-                f_old = '_' + pp + '_' + mt
-                fsp = os.path.join(fs, f_old)
-                ls = prt[pp](fsp, kf)
-                f_new = '_' + pp + '_' + ie
-                fd = os.path.join(dir, f_new)
-                dg.write(' {0} => {1} \n'.format(f_old, f_new))
-                with open(fd, 'w') as ff:
-                    ff.writelines(ls)
+    for i in im:
+        ie = '{0:03d}'.format(i)
+        for pp in prc:
+            if f'_{pp}_' in exist_list.keys():
+                if int(exist_list.get(f'_{pp}_')) != 0:
+                    write_prtk_files(pp, mt, fs, kf, ie, dg, dir)
 
-    elif cond_six is False:
-        for i in im:
-            ie = '{0:03d}'.format(i)
-            for pp in prc:
-                if f'_{pp}_' in exist_list.keys():
-                    if int(exist_list.get(f'_{pp}_')) != 0:
-                        f_old = '_' + pp + '_' + mt
-                        fsp = os.path.join(fs, f_old)
-                        ls = prt[pp](fsp, kf)
-                        f_new = '_' + pp + '_' + ie
-                        fd = os.path.join(dir, f_new)
-                        dg.write(' {0} => {1} \n'.format(f_old, f_new))
-                        with open(fd, 'w') as ff:
-                            ff.writelines(ls)
+            elif lay_conductivity_dict[i] == 6:
+                if pp == 'ELA':
+                    write_prtk_files('ELT', mt, fs, kf, ie, dg, dir)
+                else:
+                    write_prtk_files(pp, mt, fs, kf, ie, dg, dir)
+
+
+def write_prtk_files(pp, mt, fs, kf, ie, dg, dir):
+    f_old = '_' + pp + '_' + mt
+    fsp = os.path.join(fs, f_old)
+    ls = prt[pp](fsp, kf)
+    f_new = '_' + pp + '_' + ie
+    fd = os.path.join(dir, f_new)
+    dg.write(' {0} => {1} \n'.format(f_old, f_new))
+    with open(fd, 'w') as ff:
+        ff.writelines(ls)
 
 
 def par_path(initial_dir):
     for f in os.listdir(initial_dir):
-        if f.endswith(".PAR") or f.endswith(".PAR"):
+        if f.endswith(".PAR") or f.endswith(".par"):
             path = f
     return path
 
 
 def lay_path(initial_dir):
     for f in os.listdir(initial_dir):
-        if f.endswith(".LAY") or f.endswith(".LAY"):
+        if f.endswith(".LAY") or f.endswith(".lay"):
             path = f
     return path
 

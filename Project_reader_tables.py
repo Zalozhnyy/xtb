@@ -159,58 +159,58 @@ class DataParcer:
 
             with open(rf'{self.path}', 'r', encoding=f'{self.decoding_def}') as file:
                 lines_pl = file.readlines()
-        try:
-            particle_count = int(lines_pl[2])
-            layers = int(lines_pl[6])
-            line = 8  # <Layer numbers>
-            layers_numbers = np.array(lines_pl[line].strip().split(), dtype=int)
-            line += 1  # <Движение частицы в слое (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+        # try:
+        particle_count = int(lines_pl[2])
+        layers = int(lines_pl[6])
+        line = 8  # <Layer numbers>
+        layers_numbers = np.array(lines_pl[line].strip().split(), dtype=int)
+        line += 1  # <Движение частицы в слое (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
 
-            part_move = []
-            for i in range(particle_count):
+        part_move = []
+        for i in range(particle_count):
+            line += 1
+            part_move.append(lines_pl[line].strip().split())
+        part_move = np.array(part_move, dtype=int)
+
+        line += 1  # <Объемный источник (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+        line += particle_count + 1
+        line += 1  # <Частица номер>
+
+        surface_source = {}
+
+        for i in range(particle_count):
+            line += 1
+            lay_number = int(lines_pl[line].strip())
+
+            key_list = []
+            for j in range(layers):
                 line += 1
-                part_move.append(lines_pl[line].strip().split())
-            part_move = np.array(part_move, dtype=int)
+                key_list.append(lines_pl[line].split())
 
-            line += 1  # <Объемный источник (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
-            line += particle_count + 1
-            line += 1  # <Частица номер>
+            key_list = np.array(key_list, dtype=int)
+            surface_source.update({lay_number: key_list})
+            line += 1  # <Расчет плотности тока (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
 
-            surface_source = {}
+        line += particle_count + 1  # <Ионизационное торможение (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
 
-            for i in range(particle_count):
-                line += 1
-                lay_number = int(lines_pl[line].strip())
+        io_brake = []
+        for i in range(particle_count):
+            line += 1
+            io_brake.append(lines_pl[line].strip().split())
+        io_brake = np.array(io_brake, dtype=int)
 
-                key_list = []
-                for j in range(layers):
-                    line += 1
-                    key_list.append(lines_pl[line].split())
+        line += 1  # <Источник ионизации (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
 
-                key_list = np.array(key_list, dtype=int)
-                surface_source.update({lay_number: key_list})
-                line += 1  # <Расчет плотности тока (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
+        return part_move, io_brake, layers_numbers
 
-            line += particle_count + 1  # <Ионизационное торможение (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
-
-            io_brake = []
-            for i in range(particle_count):
-                line += 1
-                io_brake.append(lines_pl[line].strip().split())
-            io_brake = np.array(io_brake, dtype=int)
-
-            line += 1  # <Источник ионизации (вертикаль-слои, горизонталь-частицы) 0-нет/1-да>
-
-            return part_move, io_brake, layers_numbers
-
-        except Exception:
-            print('Ошибка в чтении файла .PL')
-            return
+        # except Exception:
+        #     print('Ошибка в чтении файла .PL')
+        #     return
 
 
 if __name__ == '__main__':
     # x = DataParcer(r'C:\work\Test_projects\SHPALA_1R\BB.PAR').par_decoder()
-    x = DataParcer(r'C:\work\Test_projects\wpala\shpala_new.LAY').lay_decoder()
+    x = DataParcer(r'C:\Work\Test_projects\tzp_2\KUVSH.PL').pl_decoder()
     print(x)
     # move, io_br, layers_numbers = DataParcer(
     #     r'C:\work\Test_projects\SHPALA_1R\BB.PL').pl_decoder()
