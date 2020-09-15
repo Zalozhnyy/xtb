@@ -24,7 +24,6 @@ import numpy as np
 import compoz_read as cord
 import Project_reader_tables
 
-from prtk_table import set_example_section
 
 ## Функция для считывания материалов, для которых
 # необходимо пересчитать таблицы

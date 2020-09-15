@@ -240,7 +240,6 @@ def main(dp):
     for i in range(len(layers_data)):
         lay_conductivity_dict.update({int(layers_data[i][0]): conductivity[i]})
 
-
     io_brake_dict = {}
     move_dict = {}
     for i in range(layers_numbers.shape[0]):
@@ -352,7 +351,7 @@ def main(dp):
         ff_ = parot_[key_]['name_out']  # _EXC_
 
         if mat_ == 'air' or mat_ == 'vozduch':
-            set_example_section('EXC', Ro_, mat_, idir_, imat)
+            set_example_section('EXC', idir_)
 
         if ff_ in exist_dict.keys() or cond_six is True:
 
@@ -381,7 +380,7 @@ def main(dp):
         ff_ = parot_[key_]['name_out']  # _ELA_
 
         if mat_ == 'air' or mat_ == 'vozduch':
-            set_example_section('ELA', Ro_, mat_, idir_, imat)
+            set_example_section('ELA', idir_)
 
         if ff_ in exist_dict.keys() or cond_six is True:
 
@@ -537,7 +536,7 @@ def main(dp):
         ff_ = parot_[key_]['name_out']  # _ION_
 
         if mat_ == 'air' or mat_ == 'vozduch':
-            set_example_section('ION', Ro_, mat_, idir_, imat)
+            set_example_section('ION', idir_)
 
         if ff_ in exist_dict.keys() or cond_six is True:
 
@@ -593,54 +592,62 @@ def example_fbb_file_reader(path):
     return data[:, 2], ro
 
 
-def set_example_section(file_type, density, mat_name, save_folder, lay_number):
-    """Функция для замены сечений из заготовленных файлов с учётом отличающихся плотностей."""
+# def set_example_section_with_ro_diff(file_type, density, mat_name, save_folder, lay_number):
+#     """Функция для замены сечений из заготовленных файлов с учётом отличающихся плотностей."""
+#
+#     pattern_file_path = os.path.normpath(
+#         os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\{0}_example'.format(file_type)))
+#
+#     skip_rows_dict = {'ELA': 10,  # словарь показывает где заканчивается шапка
+#                       'EXC': 13,
+#                       'ION': 15}
+#
+#     with open(pattern_file_path, 'r', encoding='cp1251') as file:
+#         lines = file.readlines()
+#
+#     lines[0] = lines[0].replace('air+', mat_name)
+#     description = ''.join(lines[:skip_rows_dict[file_type]])
+#     description = description.strip()
+#
+#     array = []
+#     for line in lines[skip_rows_dict[file_type]:]:
+#         array.append(line.strip().split())
+#
+#     array = np.array(array, dtype=float)
+#
+#     array[:, 1] = array[:, 1] * density / 0.00123
+#
+#     # number = 0
+#     # for file in os.listdir(save_folder):
+#     #     if file[:4] == f'_{file_type}' and '.air' in file[-5:]:
+#     #         number += 1
+#
+#     save_file_path = os.path.join(save_folder,
+#                                   '_{file_name}_{:03}.air{number}'.format(
+#                                       lay_number,
+#                                       file_name=file_type,
+#                                       number=lay_number))
+#
+#     with open(save_file_path, 'w', encoding='cp1251') as file:
+#         file.write(description)
+#
+#         for i in range(array.shape[0]):
+#             string = ' {:6.5E}  {:6.5E}         '.format(array[i, 0], array[i, 1])
+#             fu = ''
+#             for j in range(2, array.shape[1]):
+#                 fu += '{:6.5E}'.format(array[i, j]) + '  '
+#             file.write(string + fu + '\n')
+#
+#     np.savetxt(save_file_path, array,
+#                comments='', delimiter='  ', header=description, fmt='%6.5E')
 
+def set_example_section(file_type, save_folder):
     pattern_file_path = os.path.normpath(
-        os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\{0}_example'.format(file_type)))
+        os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\_{0}_999'.format(file_type)))
 
-    skip_rows_dict = {'ELA': 10,  # словарь показывает где заканчивается шапка
-                      'EXC': 13,
-                      'ION': 15}
+    save_path = os.path.join(save_folder, f'_{file_type}_999')
 
-    with open(pattern_file_path, 'r', encoding='cp1251') as file:
-        lines = file.readlines()
-
-    lines[0] = lines[0].replace('air+', mat_name)
-    description = ''.join(lines[:skip_rows_dict[file_type]])
-    description = description.strip()
-
-    array = []
-    for line in lines[skip_rows_dict[file_type]:]:
-        array.append(line.strip().split())
-
-    array = np.array(array, dtype=float)
-
-    array[:, 1] = array[:, 1] * density / 0.00123
-
-    # number = 0
-    # for file in os.listdir(save_folder):
-    #     if file[:4] == f'_{file_type}' and '.air' in file[-5:]:
-    #         number += 1
-
-    save_file_path = os.path.join(save_folder,
-                                  '_{file_name}_{:03}.air{number}'.format(
-                                      lay_number,
-                                      file_name=file_type,
-                                      number=lay_number))
-
-    # with open(save_file_path, 'w', encoding='cp1251') as file:
-    #     file.write(description)
-    #
-    #     for i in range(array.shape[0]):
-    #         string = ' {:6.5E}  {:6.5E}         '.format(array[i, 0], array[i, 1])
-    #         fu = ''
-    #         for j in range(2, array.shape[1]):
-    #             fu += '{:6.5E}'.format(array[i, j]) + '  '
-    #         file.write(string + fu + '\n')
-
-    np.savetxt(save_file_path, array,
-               comments='', delimiter='  ', header=description, fmt='%6.5E')
+    shutil.copyfile(pattern_file_path, save_path)
 
 
 if __name__ == '__main__':
