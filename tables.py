@@ -100,8 +100,8 @@ def pech_open_dir(path):
 
 def pech_ask(path):
     ask_pe = messagebox.askyesno('Проект переноса', 'В расчёте нужен проект переноса?.\n'
-                                                 'да - указать путь к проекту переноса\n'
-                                                 'нет - продолжить без проекта переноса')
+                                                    'да - указать путь к проекту переноса\n'
+                                                    'нет - продолжить без проекта переноса')
     if ask_pe is True:
         pech_dir = pech_open_dir(path)
         if pech_dir == -1:
@@ -445,7 +445,7 @@ class Example(Frame):
         dp = self._bd.copy()
         # Process(target=xrun, args=('calc_tables', dp)).start()
         main_calc_tables(dp)
-        messagebox.showinfo('Информация', 'Модуль расчёта распределений закончил свою работу')
+
         self._btpr['state'] = NORMAL
         self._btpr1['state'] = NORMAL
 
@@ -455,7 +455,11 @@ class Example(Frame):
             shutil.rmtree(materials_path)
         except:
             pass
+
         shutil.copytree(self._bd['tab'], os.path.join(self._bd['proj'], 'materials'))
+
+        messagebox.showinfo('Информация', 'Модуль расчёта распределений закончил свою работу')
+
 
     def onCalcRmp(self):
         """ """
@@ -626,13 +630,19 @@ class Example(Frame):
 
 
 if __name__ == '__main__':
-    # xdialog()
+
+    er = Tk()
+    ##    er.overrideredirect(True)
+    ex = Example(er)
+    x = (er.winfo_screenwidth() - er.winfo_reqwidth()) / 3
+    y = (er.winfo_screenheight() - er.winfo_reqheight()) / 3
+    er.geometry("+%d+%d" % (x, y))
 
     try:
         test_file = os.path.join(os.path.dirname(__file__), 'permission_denied_test')
 
         with open(test_file, 'w') as file:
-            file.write('test strig')
+            file.write('test string')
 
     except PermissionError:
         messagebox.showerror('Предупреждение', 'Программа не имеет доступа к файловой системе.\n'
@@ -642,10 +652,4 @@ if __name__ == '__main__':
         if os.path.exists(test_file):
             os.remove(test_file)
 
-    er = Tk()
-    ##    er.overrideredirect(True)
-    ex = Example(er)
-    x = (er.winfo_screenwidth() - er.winfo_reqwidth()) / 3
-    y = (er.winfo_screenheight() - er.winfo_reqheight()) / 3
-    er.geometry("+%d+%d" % (x, y))
     er.mainloop()

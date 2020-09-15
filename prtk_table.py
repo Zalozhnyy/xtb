@@ -232,11 +232,13 @@ def main(dp):
     par_dir = os.path.join(idir_, par_path(idir_))
     part_list = Project_reader_tables.DataParcer(par_dir).par_decoder()
     move, io_brake, layers_numbers = Project_reader_tables.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
-    cond_six = False
+
     lay_dir = os.path.join(idir_, lay_path(idir_))
-    _, co = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
-    if any([i == 6 for i in co]):
-        cond_six = True
+    layers_data, conductivity = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
+
+    lay_conductivity_dict = {}
+    for i in range(len(layers_data)):
+        lay_conductivity_dict.update({int(layers_data[i][0]): conductivity[i]})
 
     io_brake_dict = {}
     move_dict = {}
@@ -254,6 +256,11 @@ def main(dp):
         mt_ = 'mat-' + mat_
         imat = dly[(mat_, Ro_)][0]
         dir_mat_ = os.path.join(dp.get('tab', ''), mt_)
+
+        if lay_conductivity_dict[imat] == 6:
+            cond_six = True
+        else:
+            cond_six = False
 
         dir_mat_el_ = os.path.join(dir_mat_, 'electron')
         dir_mat_ph_ = os.path.join(dir_mat_, 'photon')
@@ -282,7 +289,7 @@ def main(dp):
 
         if mat_ == 'air' or mat_ == 'vozduch':
             try:
-                pattern_file_path = os.path.join(os.path.dirname(__file__), r'Example_files\FBB_example')
+                pattern_file_path = os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\FBB_example')
                 pattern_file_path = os.path.normpath(pattern_file_path)
                 data, ro_pat = example_fbb_file_reader(pattern_file_path)
 
@@ -332,6 +339,7 @@ def main(dp):
                 for v_ in vz_:
                     out_.write(parot_[key_]['data'].format(v_[0], v_[1]))
             copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
         # ---------------------------------------------------------------------------------
         key_ = '.528'
         xer_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
@@ -341,6 +349,10 @@ def main(dp):
         ##        ttl_st_ = ttl_ - xer_[:,-1]
         vz_ = zip(E_, cs_el_[:, 2], np.power(10, xer_[:, 1]) * 10 ** (-6))
         ff_ = parot_[key_]['name_out']  # _EXC_
+
+        if mat_ == 'air' or mat_ == 'vozduch':
+            set_example_section('EXC', idir_)
+
         if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -348,6 +360,7 @@ def main(dp):
                 for v_ in vz_:
                     out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
             copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
         # ---------------------------------------------------------------------------------
         key_ = '.526'
         rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
@@ -365,6 +378,10 @@ def main(dp):
         ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
         vz_ = zip(E_, cs_el_[:, 0])
         ff_ = parot_[key_]['name_out']  # _ELA_
+
+        if mat_ == 'air' or mat_ == 'vozduch':
+            set_example_section('ELA', idir_)
+
         if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -517,6 +534,10 @@ def main(dp):
         p_rr_[:, -1] = xeb_
         vz_ = zip(E_, cs_el_[:, 3])
         ff_ = parot_[key_]['name_out']  # _ION_
+
+        if mat_ == 'air' or mat_ == 'vozduch':
+            set_example_section('ION', idir_)
+
         if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
@@ -569,6 +590,64 @@ def example_fbb_file_reader(path):
     ro = float(line.strip().split('=')[-1])
 
     return data[:, 2], ro
+
+
+# def set_example_section_with_ro_diff(file_type, density, mat_name, save_folder, lay_number):
+#     """Функция для замены сечений из заготовленных файлов с учётом отличающихся плотностей."""
+#
+#     pattern_file_path = os.path.normpath(
+#         os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\{0}_example'.format(file_type)))
+#
+#     skip_rows_dict = {'ELA': 10,  # словарь показывает где заканчивается шапка
+#                       'EXC': 13,
+#                       'ION': 15}
+#
+#     with open(pattern_file_path, 'r', encoding='cp1251') as file:
+#         lines = file.readlines()
+#
+#     lines[0] = lines[0].replace('air+', mat_name)
+#     description = ''.join(lines[:skip_rows_dict[file_type]])
+#     description = description.strip()
+#
+#     array = []
+#     for line in lines[skip_rows_dict[file_type]:]:
+#         array.append(line.strip().split())
+#
+#     array = np.array(array, dtype=float)
+#
+#     array[:, 1] = array[:, 1] * density / 0.00123
+#
+#     # number = 0
+#     # for file in os.listdir(save_folder):
+#     #     if file[:4] == f'_{file_type}' and '.air' in file[-5:]:
+#     #         number += 1
+#
+#     save_file_path = os.path.join(save_folder,
+#                                   '_{file_name}_{:03}.air{number}'.format(
+#                                       lay_number,
+#                                       file_name=file_type,
+#                                       number=lay_number))
+#
+#     with open(save_file_path, 'w', encoding='cp1251') as file:
+#         file.write(description)
+#
+#         for i in range(array.shape[0]):
+#             string = ' {:6.5E}  {:6.5E}         '.format(array[i, 0], array[i, 1])
+#             fu = ''
+#             for j in range(2, array.shape[1]):
+#                 fu += '{:6.5E}'.format(array[i, j]) + '  '
+#             file.write(string + fu + '\n')
+#
+#     np.savetxt(save_file_path, array,
+#                comments='', delimiter='  ', header=description, fmt='%6.5E')
+
+def set_example_section(file_type, save_folder):
+    pattern_file_path = os.path.normpath(
+        os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\_{0}_999'.format(file_type)))
+
+    save_path = os.path.join(save_folder, f'_{file_type}_999')
+
+    shutil.copyfile(pattern_file_path, save_path)
 
 
 if __name__ == '__main__':

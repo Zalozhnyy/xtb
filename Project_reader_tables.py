@@ -210,7 +210,7 @@ class DataParcer:
 
 if __name__ == '__main__':
     # x = DataParcer(r'C:\work\Test_projects\SHPALA_1R\BB.PAR').par_decoder()
-    x = DataParcer(r'C:\work\Test_projects\wpala\shpala_new.LAY').lay_decoder()
+    x = DataParcer(r'C:\Work\Test_projects\tzp_2\KUVSH.PL').pl_decoder()
     print(x)
     # move, io_br, layers_numbers = DataParcer(
     #     r'C:\work\Test_projects\SHPALA_1R\BB.PL').pl_decoder()
