@@ -42,6 +42,7 @@ if Debug_:
 import xxfun as xox
 import phisconst as phis
 import Project_reader_tables
+import prtk_proton
 
 import compoz_read as cord
 
@@ -168,18 +169,6 @@ parot_['.526']['head'] = """\
 ## Функция для считывания материалов, для которых
 # необходимо пересчитать таблицы
 #
-def par_path(initial_dir):
-    for f in os.listdir(initial_dir):
-        if f.endswith(".PAR") or f.endswith(".PAR"):
-            path = f
-    return path
-
-
-def lay_path(initial_dir):
-    for f in os.listdir(initial_dir):
-        if f.endswith(".LAY") or f.endswith(".LAY"):
-            path = f
-    return path
 
 
 def copy_file(dir, nf, im):
@@ -229,11 +218,14 @@ def main(dp):
     dlog = open(fllog, 'w')
     print(fllog)
 
-    par_dir = os.path.join(idir_, par_path(idir_))
-    part_list = Project_reader_tables.DataParcer(par_dir).par_decoder()
-    move, io_brake, layers_numbers = Project_reader_tables.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+    path_dict = Project_reader_tables.check_folder(idir_)
 
-    lay_dir = os.path.join(idir_, lay_path(idir_))
+    par_dir = os.path.join(os.path.join(idir_, path_dict['PAR']))
+    lay_dir = os.path.join(idir_, path_dict['LAY'])
+    pl_dir = os.path.join(idir_, path_dict['PL'])
+
+    part_list, part_types = Project_reader_tables.DataParcer(par_dir).par_decoder()
+    move, io_brake, layers_numbers = Project_reader_tables.DataParcer(pl_dir).pl_decoder()
     layers_data, conductivity = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
 
     lay_conductivity_dict = {}
@@ -246,8 +238,8 @@ def main(dp):
         io_brake_dict.update({layers_numbers[i]: io_brake[:, i]})
         move_dict.update({layers_numbers[i]: move[:, i]})
 
-    print(f'io br  {io_brake_dict}')
-    print(f'move  {move_dict}')
+    # print(f'io br  {io_brake_dict}')
+    # print(f'move  {move_dict}')
 
     ##    mat_fl_ = dp['mf']
     ##    nm_comp_ = get_list_material(mat_fl_)
@@ -279,38 +271,93 @@ def main(dp):
         dlog.write(sx + '\n')
 
         # ---------------------------------------------------------------------------------
-        key_ = '.xer'
-        xer_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
-        xer_ = np.array(xer_)
-        xer_ = Ro_ * np.power(10, xer_[:, 1:]) * 10 ** (-6)
-        ttl_ = np.sum(xer_, axis=1)
-        ttl_st_ = ttl_ - xer_[:, -1]
-        ff_ = parot_[key_]['name_out']
+        if any([i == 1 or i == 2 for i in part_types.values()]):  # если есть тип частиц 1 или 2 в PAR
+            key_ = '.xer'
+            xer_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
+            xer_ = np.array(xer_)
+            xer_ = Ro_ * np.power(10, xer_[:, 1:]) * 10 ** (-6)
+            ttl_ = np.sum(xer_, axis=1)
+            ttl_st_ = ttl_ - xer_[:, -1]
+            ff_ = parot_[key_]['name_out']  # FBB_E
 
-        if mat_ == 'air' or mat_ == 'vozduch':
-            try:
-                pattern_file_path = os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\FBB_example')
-                pattern_file_path = os.path.normpath(pattern_file_path)
-                data, ro_pat = example_fbb_file_reader(pattern_file_path)
+            if mat_ == 'air' or mat_ == 'vozduch':
+                try:
+                    pattern_file_path = os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\FBB_example')
+                    pattern_file_path = os.path.normpath(pattern_file_path)
+                    data, ro_pat = example_fbb_file_reader(pattern_file_path)
 
-            except PermissionError:
-                print('Недостаточно прав запустите от имени администратора')
-                return
+                except PermissionError:
+                    print('Недостаточно прав запустите от имени администратора')
+                    return
 
-            data = data * Ro_ / ro_pat
+                data = data * Ro_ / ro_pat
 
-            vz_ = zip(E_, ttl_, data)
+                vz_ = zip(E_, ttl_, data)
 
-        else:
-            vz_ = zip(E_, ttl_, ttl_st_)
+            else:
+                vz_ = zip(E_, ttl_, ttl_st_)
 
-        # данные по шаманству fbb тут нужная строка в vz_[2]
-        if np.any(io_brake_dict.get(int(imat))[:] == 1):
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, density=Ro_))
-                for v_ in vz_:
-                    out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
+            # данные по шаманству fbb тут нужная строка в vz_[2]
+            if np.any(io_brake_dict.get(int(imat))[:] == 1):
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, density=Ro_))
+                    for v_ in vz_:
+                        out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
+        if any([i == 4 for i in part_types.values()]):  # если есть тип частиц протон в PAR
+            if np.any(io_brake_dict.get(int(imat))[:] == 1):
+                import zipfile as z
+
+                sly = dp['lay']
+                spr = dp['proj']
+
+                sp_ = os.path.dirname(__file__)
+                sb_ = os.path.dirname(spr)
+                elx = prtk_proton.read_el(sp_)
+                drmat = os.path.join(sp_, 'mat_files')
+                nmflzip = 'stpw-p.zip'
+                nmflzip = os.path.join(sp_, nmflzip)
+
+                if z.is_zipfile(nmflzip):
+                    fl_ = z.ZipFile(nmflzip)
+
+                    sf = fl_.read('energy.txt')
+                    et = str(sf, encoding='utf-8').split('\n')
+                    ehp = list(map(float, et))
+
+                sb = os.path.dirname(spr)
+
+                st_pow_ = np.zeros((len(ehp),))
+                mt = mat_.upper()
+                lmat = dly[(mat_, Ro_)]
+                # print(mat_, Ro_)
+
+                fmt = os.path.join(drmat, mat_.lower() + '.mrat')
+                # print(fmt)
+                comp = prtk_proton.Compozit(fmt)
+                ev = comp.conver()
+
+                for it_, tt in enumerate(ev[list(ev.keys())[0]]['elem']):
+                    ##            am += int(tt['A']) * tt['p']
+                    print(tt)
+                    nme = tt[0]
+                    print(nme)
+                    num = elx[nme]['NN']
+                    vv = prtk_proton.read_lib(sp_, num, )
+                    sx = np.interp(ehp, vv[:, 0], vv[:, 3])
+                    st_pow_ += tt[1] * sx
+
+                for nmb in lmat:
+
+                    sfl = prtk_proton.s_templ + '{0:03d}'.format(nmb)
+
+                    fot = os.path.join(dp['proj'], sfl)
+                    with open(fot, 'w') as fotf:
+                        fotf.write(prtk_proton.head.format(mat_, len(ehp)))
+                        tt = zip(ehp, Ro_ * st_pow_)
+                        for ee, sv in tt:
+                            fotf.write('{0:e}\t{1:e}\n'.format(ee, sv))
 
         exist_dict = {}
         for i, part_dict in enumerate(part_list):
@@ -350,8 +397,8 @@ def main(dp):
         vz_ = zip(E_, cs_el_[:, 2], np.power(10, xer_[:, 1]) * 10 ** (-6))
         ff_ = parot_[key_]['name_out']  # _EXC_
 
-        if mat_ == 'air' or mat_ == 'vozduch':
-            set_example_section('EXC', idir_)
+        # if mat_ == 'air' or mat_ == 'vozduch':
+        #     set_example_section('EXC', idir_)
 
         if ff_ in exist_dict.keys() or cond_six is True:
 
@@ -379,8 +426,8 @@ def main(dp):
         vz_ = zip(E_, cs_el_[:, 0])
         ff_ = parot_[key_]['name_out']  # _ELA_
 
-        if mat_ == 'air' or mat_ == 'vozduch':
-            set_example_section('ELA', idir_)
+        # if mat_ == 'air' or mat_ == 'vozduch':
+        #     set_example_section('ELA', idir_)
 
         if ff_ in exist_dict.keys() or cond_six is True:
 
@@ -651,42 +698,9 @@ def set_example_section(file_type, save_folder):
 
 
 if __name__ == '__main__':
-    pattern_file_path = r'C:\Windows\System32\FBB_example'
-    a, b = example_fbb_file_reader(pattern_file_path)
-    print(a, b)
-# import yaml
-#
-# nG_ = 21
-#
-# file_name = os.path.join(os.path.dirname(__file__), 'config.yml')
-# ff = open(file_name, 'r')
-# bd = yaml.load(ff)
-#
-# print(u'пересчитываем таблицы')
-# main(bd)
-# exit(0)
-#
-# try:
-#     import argparse
-#     import textwrap
-#     import yaml
-#
-#     parser = create_parser()
-#     args_ = vars(parser.parse_args())
-#     nG_ = args_['Nxi']
-#     name_file_ = args_['file']
-#     #        print(args_)
-#     file_name = os.path.join(os.path.dirname(__file__), 'config.yml')
-#     ff = open(file_name, 'r')
-#     bd = yaml.load(ff)
-#
-#     print(u'пересчитываем таблицы')
-#     main(bd)
-# except ImportError:
-#     print(u"Старый Питон")
-#     main(bd)
-#     pass
-# else:
-#     pass
-# finally:
-#     pass
+    import pickle
+
+    with open(r'C:\Work\Test_projects\wpala\dp', 'rb') as f:
+        dp = pickle.load(f)
+
+    main(dp)

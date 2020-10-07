@@ -46,6 +46,8 @@ from calc_tables import main as main_calc_tables
 import param
 import cfg
 from Project_reader_tables import DataParcer
+from prtk_table import main as prtk_table_main
+from prtk_prtk import main as prtk_prtk_main
 
 
 def read_prj(prjfname, stk='Layers name'):
@@ -281,11 +283,11 @@ class Example(Frame):
         self._btpr.grid(row=rw, column=0, padx=5, pady=5, sticky=W + E)
         rw += 1
 
-        self._btpr1 = Button(frame_plc, text='Распределение для РЭМП в воздухе', fg='#55A', justify=RIGHT,
-                             font=("Times", "14", "bold"),
-                             state=self._stbt, command=self.onCalcRmp1)
-        self._btpr1['state'] = DISABLED
-        self._btpr1.grid(row=rw, column=0, padx=5, pady=5, sticky=W + E)
+        # self._btpr1 = Button(frame_plc, text='Распределение для РЭМП в воздухе', fg='#55A', justify=RIGHT,
+        #                      font=("Times", "14", "bold"),
+        #                      state=self._stbt, command=self.onCalcRmp1)
+        # self._btpr1['state'] = DISABLED
+        # self._btpr1.grid(row=rw, column=0, padx=5, pady=5, sticky=W + E)
         pass
 
     ##        Label(frame_plc, textvariable=self._plc_mat, justify=LEFT ).grid(row=rw, column=1, sticky=W)
@@ -447,7 +449,7 @@ class Example(Frame):
         main_calc_tables(dp)
 
         self._btpr['state'] = NORMAL
-        self._btpr1['state'] = NORMAL
+        # self._btpr1['state'] = NORMAL
 
         materials_path = os.path.join(self._bd['proj'], 'materials')
 
@@ -460,10 +462,15 @@ class Example(Frame):
 
         messagebox.showinfo('Информация', 'Модуль расчёта распределений закончил свою работу')
 
-
     def onCalcRmp(self):
         """ """
-        Process(target=xrun, args=('prtk_table', self._bd)).start()
+        # Process(target=xrun, args=('prtk_table', self._bd)).start()
+        #
+        # Process(target=xrun, args=('prtk_prtk', self._bd)).start()
+        prtk_table_main(self._bd)
+        prtk_prtk_main(self._bd)
+
+        messagebox.showinfo('Информация', 'Модуль получения распределений закончил свою работу')
 
     def onCalcRmp1(self):
         """ """
@@ -566,7 +573,7 @@ class Example(Frame):
             self._bfe['state'] = NORMAL
             self._btbl['state'] = NORMAL
             self._btpr['state'] = NORMAL
-            self._btpr1['state'] = NORMAL
+            # self._btpr1['state'] = NORMAL
         else:
             self.onConfig()
 
