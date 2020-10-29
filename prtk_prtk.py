@@ -24,7 +24,6 @@ import numpy as np
 import compoz_read as cord
 import Project_reader_tables
 
-
 ## Функция для считывания материалов, для которых
 # необходимо пересчитать таблицы
 #
@@ -228,10 +227,19 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
         lay_conductivity_dict.update({int(layers_data[i][0]): conductivity[i]})
 
     for i in im:
+
+        if lay_conductivity_dict[i] == 6:
+            cond_six = True
+        else:
+            cond_six = False
+
         ie = '{0:03d}'.format(i)
         for pp in prc:
-            if f'_{pp}_' in exist_list.keys():
-                if int(exist_list.get(f'_{pp}_')) != 0:
+            if f'_{pp}_' in exist_list.keys() or cond_six:
+                if cond_six:
+                    write_prtk_files(pp, mt, fs, kf, ie, dg, dir)
+
+                elif int(exist_list.get(f'_{pp}_')) != 0:
                     write_prtk_files(pp, mt, fs, kf, ie, dg, dir)
 
             # elif lay_conductivity_dict[i] == 6:
@@ -250,8 +258,6 @@ def write_prtk_files(pp, mt, fs, kf, ie, dg, dir):
     dg.write(' {0} => {1} \n'.format(f_old, f_new))
     with open(fd, 'w') as ff:
         ff.writelines(ls)
-
-
 
 
 ## Функция для пересчета таблиц
@@ -306,7 +312,17 @@ def main(dp):
                             exist_dict.update({item[0]: item[1][0]})
                 # print(exist_dict)
 
+        if mt == 'AIR+':
+            pattern_file_path = os.path.normpath(
+                os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\_ION_AIR'))
+
+            save_path = os.path.join(idir_, f'_ION_999')
+            shutil.copyfile(pattern_file_path, save_path)
+
+        ############затчка#########
+
         if mt in pmat:
+            ############затчка#########
             prtk_copy_file(idir_, pdir, mt, ro, lmat, dlog, exist_dict)
 
             sx = 'For {material} Density = {density} {lay}'.format(material=mat_, density=ro, lay=lmat)
@@ -320,7 +336,6 @@ def main(dp):
 
 
 if __name__ == '__main__':
-
     import pickle
 
     with open(r'C:\Work\Test_projects\wpala\dp', 'rb') as f:
