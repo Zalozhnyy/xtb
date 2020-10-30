@@ -312,17 +312,14 @@ def main(dp):
                             exist_dict.update({item[0]: item[1][0]})
                 # print(exist_dict)
 
-        if mt == 'AIR+':
-            pattern_file_path = os.path.normpath(
-                os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\_ION_AIR'))
-
-            save_path = os.path.join(idir_, f'_ION_999')
-            shutil.copyfile(pattern_file_path, save_path)
-
-        ############затчка#########
+        # if mt == 'AIR+':
+        #     pattern_file_path = os.path.normpath(
+        #         os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\_ION_AIR'))
+        #
+        #     save_path = os.path.join(idir_, f'_ION_999')
+        #     shutil.copyfile(pattern_file_path, save_path)
 
         if mt in pmat:
-            ############затчка#########
             prtk_copy_file(idir_, pdir, mt, ro, lmat, dlog, exist_dict)
 
             sx = 'For {material} Density = {density} {lay}'.format(material=mat_, density=ro, lay=lmat)
