@@ -170,6 +170,9 @@ parot_['.526']['head'] = """\
 # необходимо пересчитать таблицы
 #
 
+k2r = 0.99
+
+
 
 def copy_file(dir, nf, im):
     if len(im) == 1:
@@ -434,6 +437,15 @@ def main(dp):
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(
                     parot_[key_]['head'].format(material=mat_, nE=nE_, Epp=2.0 * phis.ms_el_gr / Am_, nG=nG_))
+
+                vv_ = p_rr_[0, ::-1]
+                ss_ = parot_[key_]['data'].format(0.0, 0.0)
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
                 for k_, v_ in enumerate(vz_):
                     ss_ = parot_[key_]['data'].format(v_[0], v_[1])
                     vv_ = p_rr_[k_, :]
@@ -465,6 +477,15 @@ def main(dp):
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
+
+                vv_ = p_rr_[0, ::-1]
+                ss_ = parot_[key_]['data'].format(0.0, 0.0)
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
                 for k_, v_ in enumerate(vz_):
                     ss_ = parot_[key_]['data'].format(v_[0], v_[1])
                     vv_ = p_rr_[k_, :]
@@ -508,6 +529,15 @@ def main(dp):
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
+
+                vv_ = p_rr_[0, ::-1]
+                ss_ = parot_[key_]['data'].format(0.0, 0.0)
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
                 for k_, v_ in enumerate(vz_):
                     ss_ = parot_[key_]['data'].format(v_[0], v_[1])
                     mm_ = ['{0:12.5E}'.format(c_) for c_ in p_ive_[k_, :]]
@@ -591,6 +621,15 @@ def main(dp):
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, Emin=E_[0], nG=nG_))
+
+                ss_ = parot_[key_]['data'].format(0.0, 0.0, 0.0)
+                vv_ = p_rr_[0, ::-1]
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                ss_ = parot_[key_]['data'].format(E_[0] * k2r, 0.0, 0.0)
+                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
                 for k_, v_ in enumerate(vz_):
                     ss_ = parot_[key_]['data'].format(v_[0], v_[1], p_ra_[k_])
                     vv_ = p_rr_[k_, ::-1]
