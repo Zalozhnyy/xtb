@@ -24,7 +24,6 @@ import numpy as np
 import compoz_read as cord
 import Project_reader_tables
 
-
 ## Функция для считывания материалов, для которых
 # необходимо пересчитать таблицы
 #
@@ -219,7 +218,8 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
     nf = [os.path.split(ff)[-1] for ff in tt]
     prc = [ff.split('_')[1] for ff in nf]
 
-    lay_dir = os.path.join(dir, lay_path(dir))
+    path_dict = Project_reader_tables.check_folder(dir)
+    lay_dir = os.path.join(dir, path_dict['LAY'])
     layers_data, conductivity = Project_reader_tables.DataParcer(lay_dir).lay_decoder()
 
     lay_conductivity_dict = {}
@@ -227,17 +227,26 @@ def prtk_copy_file(dir, dirin, mt, ro, im, dg, exist_list):
         lay_conductivity_dict.update({int(layers_data[i][0]): conductivity[i]})
 
     for i in im:
+
+        if lay_conductivity_dict[i] == 6:
+            cond_six = True
+        else:
+            cond_six = False
+
         ie = '{0:03d}'.format(i)
         for pp in prc:
-            if f'_{pp}_' in exist_list.keys():
-                if int(exist_list.get(f'_{pp}_')) != 0:
+            if f'_{pp}_' in exist_list.keys() or cond_six:
+                if cond_six:
                     write_prtk_files(pp, mt, fs, kf, ie, dg, dir)
 
-            elif lay_conductivity_dict[i] == 6:
-                if pp == 'ELA':
-                    write_prtk_files('ELT', mt, fs, kf, ie, dg, dir)
-                else:
+                elif int(exist_list.get(f'_{pp}_')) != 0:
                     write_prtk_files(pp, mt, fs, kf, ie, dg, dir)
+
+            # elif lay_conductivity_dict[i] == 6:
+            #     if pp == 'ELA':
+            #         write_prtk_files('ELT', mt, fs, kf, ie, dg, dir)
+            #     else:
+            #         write_prtk_files(pp, mt, fs, kf, ie, dg, dir)
 
 
 def write_prtk_files(pp, mt, fs, kf, ie, dg, dir):
@@ -249,20 +258,6 @@ def write_prtk_files(pp, mt, fs, kf, ie, dg, dir):
     dg.write(' {0} => {1} \n'.format(f_old, f_new))
     with open(fd, 'w') as ff:
         ff.writelines(ls)
-
-
-def par_path(initial_dir):
-    for f in os.listdir(initial_dir):
-        if f.endswith(".PAR") or f.endswith(".par"):
-            path = f
-    return path
-
-
-def lay_path(initial_dir):
-    for f in os.listdir(initial_dir):
-        if f.endswith(".LAY") or f.endswith(".lay"):
-            path = f
-    return path
 
 
 ## Функция для пересчета таблиц
@@ -286,9 +281,13 @@ def main(dp):
     dlog = open(fllog, 'w')
     print(fllog)
 
-    par_dir = os.path.join(idir_, par_path(idir_))
-    part_list = Project_reader_tables.DataParcer(par_dir).par_decoder()
-    move, io_brake, layers_numbers = Project_reader_tables.DataParcer(par_dir.replace('.PAR', '.PL')).pl_decoder()
+    path_dict = Project_reader_tables.check_folder(idir_)
+
+    par_dir = os.path.join(os.path.join(idir_, path_dict['PAR']))
+    pl_dir = os.path.join(idir_, path_dict['PL'])
+
+    part_list, part_types = Project_reader_tables.DataParcer(par_dir).par_decoder()
+    move, io_brake, layers_numbers = Project_reader_tables.DataParcer(pl_dir).pl_decoder()
 
     move_dict = {}
     for i in range(layers_numbers.shape[0]):
@@ -311,7 +310,14 @@ def main(dp):
                     for item in components.items():
                         if item[1][0] == 1:
                             exist_dict.update({item[0]: item[1][0]})
-                print(exist_dict)
+                # print(exist_dict)
+
+        # if mt == 'AIR+':
+        #     pattern_file_path = os.path.normpath(
+        #         os.path.join(os.path.dirname(__file__), r'prtk_files\AIR\_ION_AIR'))
+        #
+        #     save_path = os.path.join(idir_, f'_ION_999')
+        #     shutil.copyfile(pattern_file_path, save_path)
 
         if mt in pmat:
             prtk_copy_file(idir_, pdir, mt, ro, lmat, dlog, exist_dict)
@@ -327,54 +333,9 @@ def main(dp):
 
 
 if __name__ == '__main__':
+    import pickle
 
-    file_name = os.path.join(os.path.dirname(__file__), 'defall.proj')
-    ff = open(file_name, 'r')
-    bd = yaml.load(ff)
+    with open(r'C:\Work\Test_projects\wpala\dp', 'rb') as f:
+        dp = pickle.load(f)
 
-    print('пересчитываем таблицы')
-    main(bd)
-    exit(0)
-
-    sd = os.path.join(os.path.dirname(__file__), 'prtk_files')
-    kk = 10.0
-
-    nf = os.path.join(sd, '_ION_AIR')
-
-    ls = ff_ion(nf, kk)
-
-    try:
-        with open(os.path.join(sd, 'ion'), 'w') as ff:
-            ff.writelines(ls)
-    except IOError:
-        print(("такого файла наверное нет.\n%s" % ff))
-
-    nf = os.path.join(sd, '_ATT_AIR')
-    ls = ff_att(nf, kk)
-
-    try:
-        with open(os.path.join(sd, 'att'), 'w') as ff:
-            ff.writelines(ls)
-    except IOError:
-        print(("такого файла наверное нет.\n%s" % ff))
-
-    nf = os.path.join(sd, '_ROT_AIR')
-    ls = ff_rot(nf, kk)
-
-    try:
-        with open(os.path.join(sd, 'rot'), 'w') as ff:
-            ff.writelines(ls)
-    except IOError:
-        print(("такого файла наверное нет.\n%s" % ff))
-
-    nf = os.path.join(sd, '_ELA_AIR')
-
-    ls = ff_ela(nf, kk)
-
-    try:
-        with open(os.path.join(sd, 'ela'), 'w') as ff:
-            ff.writelines(ls)
-    except IOError:
-        print(("такого файла наверное нет.\n%s" % ff))
-
-    exit(0)
+    main(dp)

@@ -3,15 +3,36 @@ import os
 import numpy as np
 
 
-class Particle:
-    def __init__(self, dictionary):
-        self.particle_dictionary = dictionary
+def check_folder(path):
+    prj_name = []
+    for f in os.listdir(path):
+        if f.endswith(".PRJ") or f.endswith(".prj"):
+            prj_name.append(f)
+    if len(prj_name) == 0:
+        return
 
-    def append_dict(self, key, value):
-        self.particle_dictionary.update({f'{key}': value})
+    try:
+        with open(os.path.join(path, rf'{prj_name[0]}'), 'r', encoding='utf-8') as file:
+            lines = file.readlines()
+    except UnicodeDecodeError:
+        with open(os.path.join(path, rf'{prj_name[0]}'), 'r',
+                  encoding=locale.getpreferredencoding()) as file:
+            lines = file.readlines()
 
-    def dict_return(self):
-        return self.particle_dictionary
+    out = {}
+    for i in range(len(lines)):
+        if '<Grd name>' in lines[i]:
+            out.setdefault('GRD', lines[i + 1].strip())
+        if '<Tok name>' in lines[i]:
+            out.setdefault('TOK', lines[i + 1].strip())
+        if '<Layers name>' in lines[i]:
+            out.setdefault('LAY', lines[i + 1].strip())
+        if '<Particles-Layers name>' in lines[i]:
+            out.setdefault('PL', lines[i + 1].strip())
+        if '<Particles name>' in lines[i]:
+            out.setdefault('PAR', lines[i + 1].strip())
+
+    return out
 
 
 class DataParcer:
@@ -36,10 +57,6 @@ class DataParcer:
             12: '_REC_',
         }
 
-    def particle(self):
-        a = {}
-        return Particle(dictionary=a)
-
     def par_decoder(self):
         try:
             with open(rf'{self.path}', 'r', encoding=f'{self.decoding}') as file:
@@ -53,19 +70,18 @@ class DataParcer:
         L.append(int(lines[2].strip()))
 
         string_num = 4  # <Тип(0-неизвестен,1-электрон,2-позитрон,3-квант,4-протон,5-дейтрон,6-а/частица), Название>
-        string_num += 2  # <Номер, заряд(эл.), масса(г), самосогл.(0-нет,1-да), торм.(0-нет,1-эл.,2-пр.),
+        particle_type_dict = {}
 
         for num in range(L[0]):
+            string_num += 1
+            particle_type = int(lines[string_num].split()[0])
+
+            string_num += 1  # <Номер, заряд(эл.), масса(г), самосогл.(0-нет,1-да), торм.(0-нет,1-эл.,2-пр.),
+
             part = {}
 
             string_num += 1  # <Номер, заряд(эл.), масса(г), самосогл.(0-нет,1-да) + 1 str
 
-            # if int(lines[string_num].split()[4]) == 1:
-            #     part.append_dict(key='FBB_E_', value=[1])
-            # if int(lines[string_num].split()[4]) == 2:
-            #     part.append_dict(key='FBB_P_', value=[2])
-
-            # L.append(int(lines[string_num].split()[0]))
             string_num += 3  # <Количество процессов>
             string_num += 1  # <Количество процессов> + 2 str
 
@@ -78,14 +94,16 @@ class DataParcer:
                 key = self.decode_dictionary.get(int(lines[i].split()[0]))
                 value = list(map(int, lines[i].split()[1:]))
                 tmp.update({key: value})
+
             part.update({num: tmp})
+            particle_type_dict.update(({num: particle_type}))
 
             string_num = end
 
             self.dict_list.append(part)
-            string_num += 4  # переход к следующему кластеру (последняя строка с цифрами в процессах)
+            string_num += 2  # переход к следующему кластеру (последняя строка с цифрами в процессах)
 
-        return self.dict_list
+        return self.dict_list, particle_type_dict
 
     def lay_decoder(self):
         #### .LAY DECODER
@@ -209,22 +227,7 @@ class DataParcer:
 
 
 if __name__ == '__main__':
-    # x = DataParcer(r'C:\work\Test_projects\SHPALA_1R\BB.PAR').par_decoder()
-    x = DataParcer(r'C:\Work\Test_projects\tzp_2\KUVSH.PL').pl_decoder()
+    x, y = DataParcer(r'C:\Work\Test_projects\wpala\shpala_new.PAR').par_decoder()
+    # x = DataParcer(r'C:\Work\Test_projects\wpala\shpala_new.PL').pl_decoder()
     print(x)
-    # move, io_br, layers_numbers = DataParcer(
-    #     r'C:\work\Test_projects\SHPALA_1R\BB.PL').pl_decoder()
-    # move, io_br, layers_numbers = DataParcer(
-    #     r'C:\work\wpala\shpala_new.PL').pl_decoder()
-    #
-    #
-    # print(move)
-    # print(io_br.shape)
-    # print(layers_numbers.shape)
-
-    # io_brake_dict = {}
-    #
-    # for i in range(layers_numbers.shape[0]):
-    #     io_brake_dict.update({layers_numbers[i]: io_br[:, i]})
-    #
-    # print(io_brake_dict)
+    print(y)
