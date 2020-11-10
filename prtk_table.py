@@ -435,8 +435,9 @@ def main(dp):
         if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                # исправление количества строк с учётом 2х новых строчек
                 out_.write(
-                    parot_[key_]['head'].format(material=mat_, nE=nE_, Epp=2.0 * phis.ms_el_gr / Am_, nG=nG_))
+                    parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, Epp=2.0 * phis.ms_el_gr / Am_, nG=nG_))
 
                 vv_ = p_rr_[0, ::-1]
                 ss_ = parot_[key_]['data'].format(0.0, 0.0)
@@ -476,6 +477,7 @@ def main(dp):
         if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                # исправление количества строк с учётом 2х новых строчек
                 out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
 
                 vv_ = p_rr_[0, ::-1]
@@ -528,7 +530,8 @@ def main(dp):
         if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
+                # исправление количества строк с учётом 2х новых строчек
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, nG=nG_))
 
                 vv_ = p_rr_[0, ::-1]
                 ss_ = parot_[key_]['data'].format(0.0, 0.0)
@@ -620,7 +623,8 @@ def main(dp):
         if ff_ in exist_dict.keys() or cond_six is True:
 
             with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, Emin=E_[0], nG=nG_))
+                # исправление количества строк с учётом 2х новых строчек
+                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, Emin=E_[0], nG=nG_))
 
                 ss_ = parot_[key_]['data'].format(0.0, 0.0, 0.0)
                 vv_ = p_rr_[0, ::-1]
