@@ -608,12 +608,12 @@ def main(dp):
         for k_ in range(nE_):
             # p_rr_[k_, 1:] = np.interp(gl_, gamma_, rr_[k_, 1:])
             p_rr_[k_, 1:] = np.interp(gg_[1:], gamma_, rrv_[k_, 1:])
-            p_rr_[k_, 0] = rrv_[k_, 0]
+            p_rr_[k_, -1] =  0.0
 
         p_rr_ *= 1e-6
         ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
-        xeb_ = (E_ - eb_el_) / 2. * 10 ** (-6)
-        p_rr_[:, -1] = xeb_
+        xeb_ = (E_ - eb_el_) / 2.
+        p_rr_[:, 0] = xeb_
         vz_ = zip(E_, cs_el_[:, 3])
         ff_ = parot_[key_]['name_out']  # _ION_
 
