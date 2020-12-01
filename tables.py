@@ -452,6 +452,8 @@ class Example(Frame):
         # self._btpr1['state'] = NORMAL
 
         materials_path = os.path.join(self._bd['proj'], 'materials')
+        if os.path.exists(materials_path) and os.path.isfile(materials_path):
+            os.remove(materials_path)
 
         try:
             shutil.rmtree(materials_path)
