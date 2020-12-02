@@ -464,6 +464,11 @@ class Example(Frame):
 
         messagebox.showinfo('Информация', 'Модуль расчёта распределений закончил свою работу')
 
+        # import pickle
+        #
+        # with open(os.path.join(self._bd['proj'], 'db'), 'wb') as f:
+        #     pickle.dump(dp, f)
+
     def onCalcRmp(self):
         """ """
         # Process(target=xrun, args=('prtk_table', self._bd)).start()

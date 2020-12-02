@@ -165,13 +165,11 @@ parot_['.526']['head'] = """\
 
 ЭНЕРГИЯ(МэВ) ПОЛНОЕ СЕЧЕНИЕ(1/СМ) ЭНЕРГИЯ(МЭВ) КВАНТА - ФУНКЦИЯ РАВНОМЕРНО РАСПРЕДЕЛЕННОЙ НА [0,1] СЛУЧ ВЕЛИЧИНЫ""" + "\n"
 
-
 ## Функция для считывания материалов, для которых
 # необходимо пересчитать таблицы
 #
 
 k2r = 0.99
-
 
 
 def copy_file(dir, nf, im):
@@ -249,13 +247,15 @@ def main(dp):
 
     for mat_, Ro_ in dly.keys():
         mt_ = 'mat-' + mat_
-        imat = dly[(mat_, Ro_)][0]
+        imat_list = dly[(mat_, Ro_)]
+
         dir_mat_ = os.path.join(dp.get('tab', ''), mt_)
 
-        if lay_conductivity_dict[imat] == 6:
-            cond_six = True
-        else:
-            cond_six = False
+        for imat in imat_list:
+            if lay_conductivity_dict[imat] == 6:
+                cond_six = True
+            else:
+                cond_six = False
 
         dir_mat_el_ = os.path.join(dir_mat_, 'electron')
         dir_mat_ph_ = os.path.join(dir_mat_, 'photon')
@@ -301,345 +301,349 @@ def main(dp):
                 vz_ = zip(E_, ttl_, ttl_st_)
 
             # данные по шаманству fbb тут нужная строка в vz_[2]
-            if np.any(io_brake_dict.get(int(imat))[:] == 1):
+            for imat in imat_list:
+                if np.any(io_brake_dict.get(int(imat)) == 1):
+                    with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                        out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, density=Ro_))
+                        for v_ in vz_:
+                            out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
+                    copy_file(idir_, ff_, [imat])
+
+        for imat in imat_list:
+            if any([i == 4 for i in part_types.values()]):  # если есть тип частиц протон в PAR
+                if np.any(io_brake_dict.get(int(imat))[:] == 1):
+                    import zipfile as z
+
+                    sly = dp['lay']
+                    spr = dp['proj']
+
+                    sp_ = os.path.dirname(__file__)
+                    sb_ = os.path.dirname(spr)
+                    elx = prtk_proton.read_el(sp_)
+                    drmat = os.path.join(sp_, 'mat_files')
+                    nmflzip = 'stpw-p.zip'
+                    nmflzip = os.path.join(sp_, nmflzip)
+
+                    if z.is_zipfile(nmflzip):
+                        fl_ = z.ZipFile(nmflzip)
+
+                        sf = fl_.read('energy.txt')
+                        et = str(sf, encoding='utf-8').split('\n')
+                        ehp = list(map(float, et))
+
+                    sb = os.path.dirname(spr)
+
+                    st_pow_ = np.zeros((len(ehp),))
+                    mt = mat_.upper()
+                    lmat = dly[(mat_, Ro_)]
+                    # print(mat_, Ro_)
+
+                    fmt = os.path.join(drmat, mat_.lower() + '.mrat')
+                    # print(fmt)
+                    comp = prtk_proton.Compozit(fmt)
+                    ev = comp.conver()
+
+                    for it_, tt in enumerate(ev[list(ev.keys())[0]]['elem']):
+                        ##            am += int(tt['A']) * tt['p']
+                        print(tt)
+                        nme = tt[0]
+                        print(nme)
+                        num = elx[nme]['NN']
+                        vv = prtk_proton.read_lib(sp_, num, )
+                        sx = np.interp(ehp, vv[:, 0], vv[:, 3])
+                        st_pow_ += tt[1] * sx
+
+                    for nmb in lmat:
+
+                        sfl = prtk_proton.s_templ + '{0:03d}'.format(nmb)
+
+                        fot = os.path.join(dp['proj'], sfl)
+                        with open(fot, 'w') as fotf:
+                            fotf.write(prtk_proton.head.format(mat_, len(ehp)))
+                            tt = zip(ehp, Ro_ * st_pow_)
+                            for ee, sv in tt:
+                                fotf.write('{0:e}\t{1:e}\n'.format(ee, sv))
+
+        exist_dict = {}
+        for imat in imat_list:
+            for i, part_dict in enumerate(part_list):
+                for key in part_dict.keys():
+                    part_dict_vals = part_dict.values()
+                    part_number = key
+
+                if move_dict.get(imat)[part_number] == 1:
+                    for components in part_dict_vals:
+                        for item in components.items():
+                            if item[1][0] == 1:
+                                exist_dict.update({item[0]: item[1][0]})
+        print(exist_dict)
+        # ---------------------------------------------------------------------------------
+        for imat in imat_list:
+            key_ = '.ann'
+            xt_ = cs_el_[:, -1]
+            xg_ = (phis.E0 + Eev_) / phis.E0
+            sl_c = 29979245800.0  # cm/s
+            xv_ = sl_c * np.sqrt(1.0 - (1. / xg_) ** 2)
+            vz_ = zip(E_, xt_ * xv_)
+            ff_ = parot_[key_]['name_out']
+            if ff_ in exist_dict.keys() or cond_six is True:
+
                 with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, density=Ro_))
+                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
+                    for v_ in vz_:
+                        out_.write(parot_[key_]['data'].format(v_[0], v_[1]))
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
+            # ---------------------------------------------------------------------------------
+            key_ = '.528'
+            xer_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
+            xer_ = np.array(xer_)
+            ##        xer_ = Ro_ * np.power(10, xer_[:, 1:]) * 10**(-6)
+            ##        ttl_ = np.sum(xer_, axis=1)
+            ##        ttl_st_ = ttl_ - xer_[:,-1]
+            vz_ = zip(E_, cs_el_[:, 2], np.power(10, xer_[:, 1]) * 10 ** (-6))
+            ff_ = parot_[key_]['name_out']  # _EXC_
+
+            # if mat_ == 'air' or mat_ == 'vozduch':
+            #     set_example_section('EXC', idir_)
+
+            if ff_ in exist_dict.keys() or cond_six is True:
+
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    out_.write(parot_[key_]['head'].format(material=mat_, Emin=E_[0], nE=nE_))
                     for v_ in vz_:
                         out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
                 copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
-        if any([i == 4 for i in part_types.values()]):  # если есть тип частиц протон в PAR
-            if np.any(io_brake_dict.get(int(imat))[:] == 1):
-                import zipfile as z
+            # ---------------------------------------------------------------------------------
+            key_ = '.526'
+            rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
+            rr_ = np.transpose(rr_)
+            gamma_ = np.linspace(float(heap_[7].split()[0]), 0, int(heap_[7].split()[1]) - 1)
+            p_rr_ = -1.0 * np.ones((nE_, nG_))
+            gg_lg = np.log10(gg_[1:])
+            ##        gamma_lg = np.log10(gamma_[1:])
+            for k_ in range(nE_):
+                p_rr_[k_, 1:] = np.interp(gg_lg, gamma_, rr_[k_, 1:])
+            p_rr_[:, 1:] = np.power(10, p_rr_[:, 1:]) - 1
+            ##        for k_ in xrange(nE_):
+            ##            p_rr_[k_, :] = np.interp(gg_, gamma_, rr_[k_, :])
+            ##        p_rr_[:, 1:] = np.power(10,p_rr_[:, 1:])-1
+            ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
+            vz_ = zip(E_, cs_el_[:, 0])
+            ff_ = parot_[key_]['name_out']  # _ELA_
 
-                sly = dp['lay']
-                spr = dp['proj']
+            # if mat_ == 'air' or mat_ == 'vozduch':
+            #     set_example_section('ELA', idir_)
 
-                sp_ = os.path.dirname(__file__)
-                sb_ = os.path.dirname(spr)
-                elx = prtk_proton.read_el(sp_)
-                drmat = os.path.join(sp_, 'mat_files')
-                nmflzip = 'stpw-p.zip'
-                nmflzip = os.path.join(sp_, nmflzip)
+            if ff_ in exist_dict.keys() or cond_six is True:
 
-                if z.is_zipfile(nmflzip):
-                    fl_ = z.ZipFile(nmflzip)
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    # исправление количества строк с учётом 2х новых строчек
+                    out_.write(
+                        parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, Epp=2.0 * phis.ms_el_gr / Am_, nG=nG_))
 
-                    sf = fl_.read('energy.txt')
-                    et = str(sf, encoding='utf-8').split('\n')
-                    ehp = list(map(float, et))
-
-                sb = os.path.dirname(spr)
-
-                st_pow_ = np.zeros((len(ehp),))
-                mt = mat_.upper()
-                lmat = dly[(mat_, Ro_)]
-                # print(mat_, Ro_)
-
-                fmt = os.path.join(drmat, mat_.lower() + '.mrat')
-                # print(fmt)
-                comp = prtk_proton.Compozit(fmt)
-                ev = comp.conver()
-
-                for it_, tt in enumerate(ev[list(ev.keys())[0]]['elem']):
-                    ##            am += int(tt['A']) * tt['p']
-                    print(tt)
-                    nme = tt[0]
-                    print(nme)
-                    num = elx[nme]['NN']
-                    vv = prtk_proton.read_lib(sp_, num, )
-                    sx = np.interp(ehp, vv[:, 0], vv[:, 3])
-                    st_pow_ += tt[1] * sx
-
-                for nmb in lmat:
-
-                    sfl = prtk_proton.s_templ + '{0:03d}'.format(nmb)
-
-                    fot = os.path.join(dp['proj'], sfl)
-                    with open(fot, 'w') as fotf:
-                        fotf.write(prtk_proton.head.format(mat_, len(ehp)))
-                        tt = zip(ehp, Ro_ * st_pow_)
-                        for ee, sv in tt:
-                            fotf.write('{0:e}\t{1:e}\n'.format(ee, sv))
-
-        exist_dict = {}
-        for i, part_dict in enumerate(part_list):
-            for key in part_dict.keys():
-                part_dict_vals = part_dict.values()
-                part_number = key
-
-            if move_dict.get(imat)[part_number] == 1:
-                for components in part_dict_vals:
-                    for item in components.items():
-                        if item[1][0] == 1:
-                            exist_dict.update({item[0]: item[1][0]})
-        print(exist_dict)
-        # ---------------------------------------------------------------------------------
-        key_ = '.ann'
-        xt_ = cs_el_[:, -1]
-        xg_ = (phis.E0 + Eev_) / phis.E0
-        sl_c = 29979245800.0  # cm/s
-        xv_ = sl_c * np.sqrt(1.0 - (1. / xg_) ** 2)
-        vz_ = zip(E_, xt_ * xv_)
-        ff_ = parot_[key_]['name_out']
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_))
-                for v_ in vz_:
-                    out_.write(parot_[key_]['data'].format(v_[0], v_[1]))
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
-
-        # ---------------------------------------------------------------------------------
-        key_ = '.528'
-        xer_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
-        xer_ = np.array(xer_)
-        ##        xer_ = Ro_ * np.power(10, xer_[:, 1:]) * 10**(-6)
-        ##        ttl_ = np.sum(xer_, axis=1)
-        ##        ttl_st_ = ttl_ - xer_[:,-1]
-        vz_ = zip(E_, cs_el_[:, 2], np.power(10, xer_[:, 1]) * 10 ** (-6))
-        ff_ = parot_[key_]['name_out']  # _EXC_
-
-        # if mat_ == 'air' or mat_ == 'vozduch':
-        #     set_example_section('EXC', idir_)
-
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, Emin=E_[0], nE=nE_))
-                for v_ in vz_:
-                    out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
-
-        # ---------------------------------------------------------------------------------
-        key_ = '.526'
-        rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
-        rr_ = np.transpose(rr_)
-        gamma_ = np.linspace(float(heap_[7].split()[0]), 0, int(heap_[7].split()[1]) - 1)
-        p_rr_ = -1.0 * np.ones((nE_, nG_))
-        gg_lg = np.log10(gg_[1:])
-        ##        gamma_lg = np.log10(gamma_[1:])
-        for k_ in range(nE_):
-            p_rr_[k_, 1:] = np.interp(gg_lg, gamma_, rr_[k_, 1:])
-        p_rr_[:, 1:] = np.power(10, p_rr_[:, 1:]) - 1
-        ##        for k_ in xrange(nE_):
-        ##            p_rr_[k_, :] = np.interp(gg_, gamma_, rr_[k_, :])
-        ##        p_rr_[:, 1:] = np.power(10,p_rr_[:, 1:])-1
-        ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
-        vz_ = zip(E_, cs_el_[:, 0])
-        ff_ = parot_[key_]['name_out']  # _ELA_
-
-        # if mat_ == 'air' or mat_ == 'vozduch':
-        #     set_example_section('ELA', idir_)
-
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                # исправление количества строк с учётом 2х новых строчек
-                out_.write(
-                    parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, Epp=2.0 * phis.ms_el_gr / Am_, nG=nG_))
-
-                vv_ = p_rr_[0, ::-1]
-                ss_ = parot_[key_]['data'].format(0.0, 0.0)
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-
-                for k_, v_ in enumerate(vz_):
-                    ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                    vv_ = p_rr_[k_, :]
-                    ##                vv_= np.arccos(vv_[::-1])
-                    vv_ = vv_[::-1]
-                    tt = vv_[-2] + (vv_[-2] - vv_[-3])  # /(gg_[-2]-gg_[-3])
-                    vv_[-1] = max(tt, -1.)
-                    vv_[0] = 1.0
-                    vv_ = np.arccos(vv_)
-
-                    ##                vv_[0] = 0.0
-                    mm_ = ['{0:12.5E} '.format(c_) for c_ in vv_]
+                    vv_ = p_rr_[0, ::-1]
+                    ss_ = parot_[key_]['data'].format(0.0, 0.0)
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
                     out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-            ##
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
-
-        # ---------------------------------------------------------------------------------
-        key_ = '.527'
-        rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
-        rr_ = np.transpose(rr_)
-        gamma_ = np.linspace(0., 1., rr_.shape[1])
-        p_rr_ = np.zeros((nE_, nG_))
-        for k_ in range(nE_):
-            p_rr_[k_, :] = np.interp(gg_, gamma_, rr_[k_, :])
-        p_rr_ = np.power(10, p_rr_) * 10 ** (-6)
-        vz_ = zip(E_, cs_el_[:, 1])
-        ff_ = parot_[key_]['name_out']  # _BRM_
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                # исправление количества строк с учётом 2х новых строчек
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
-
-                vv_ = p_rr_[0, ::-1]
-                ss_ = parot_[key_]['data'].format(0.0, 0.0)
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-
-                for k_, v_ in enumerate(vz_):
-                    ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                    vv_ = p_rr_[k_, :]
-                    vv_ = vv_[::-1]
-                    vv_[0] = 0.0
-                    mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
+                    ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
                     out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
-        # ---------------------------------------------------------------------------------
-
-        cs_ph_, heap_ph_ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.23'))
-        cs_ph_ = Ro_ * np.power(10, cs_ph_[:, 1:])
-        # ---------------------------------------------------------------------------------
-
-        key_ = '.522'
-        eb_ph_, heap__ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.eb'))
-        eb_ph_ = eb_ph_[:, -1] * 10 ** (-6)
-        vz_ = zip(E_, cs_ph_[:, -1], eb_ph_)
-        ff_ = parot_[key_]['name_out']  # _FOT_
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, bE=eb_ph_[-1]))
-                for v_ in vz_:
-                    out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
-
-        # ---------------------------------------------------------------------------------
-
-        key_ = '.ive'
-        ive_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.ive'))
-        ive_ = np.transpose(ive_)
-        gamma_ = np.linspace(0., 1., ive_.shape[1])
-        p_ive_ = np.zeros((nE_, nG_))
-        for k_ in range(nE_):
-            p_ive_[k_, :] = np.interp(gg_, gamma_, ive_[k_, :]) * 10 ** (-6)
-        vz_ = zip(E_, cs_ph_[:, 2])
-        ff_ = parot_[key_]['name_out']  # _KOM_
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                # исправление количества строк с учётом 2х новых строчек
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, nG=nG_))
-
-                vv_ = p_rr_[0, ::-1]
-                ss_ = parot_[key_]['data'].format(0.0, 0.0)
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-
-                for k_, v_ in enumerate(vz_):
-                    ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                    mm_ = ['{0:12.5E}'.format(c_) for c_ in p_ive_[k_, :]]
-                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
-
-        # ---------------------------------------------------------------------------------
-
-        key_ = '.516'
-        rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl' + key_))
-        rr_ = np.transpose(rr_)
-        gamma_ = np.linspace(float(heap_[7].split()[0]), 0, int(heap_[7].split()[1]) - 1)
-        p_rr_ = np.zeros((nE_, nG_))
-        gl_ = np.log10(gg_[1:])
-        for k_ in range(nE_):
-            p_rr_[k_, 1:] = np.interp(gl_, gamma_, rr_[k_, 1:])
-        p_rr_[:, 1:] = np.power(10, p_rr_[:, 1:]) * 10 ** (-6)
-        i_rr_ = (p_rr_ < 1.E-16)
-        E2_ = 2 * phis.E0 / 10 ** 6
-        nE_ = sum(E_ > E2_) + 1
-        p_rr_[i_rr_] = 0.0
-        vz_ = zip(E_, cs_ph_[:, 3])
-        ff_ = parot_[key_]['name_out']  # _PAR_
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
-                ##            ss_ = parot_[key_]['data'].format(1.0, 0.0)
-                ss_ = parot_[key_]['data'].format(E2_, 0.0)
-                vt_ = 0.0 * np.ones(nG_)
-                mm_ = ['{0:12.5E}'.format(c_) for c_ in vt_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-
-                for k_, v_ in enumerate(vz_):
-                    if E_[k_] >= E2_:
-                        vv_ = p_rr_[k_, :]
-                        dd_ = v_[0] - E2_ - vv_[-1]
-                        dlog.write('E = {0}: Delta ={1}\n'.format(v_[0], dd_) + '\n')
-                        if dd_ < 0.:
-                            dlog.write('Vend = {0} '.format(v_[-1]) + '\n')
-
-                            vv_[-1] = v_[0] - E2_
-                            dlog.write('Change on Vend = {0}\n'.format(v_[-1]) + '\n')
-
+                    for k_, v_ in enumerate(vz_):
                         ss_ = parot_[key_]['data'].format(v_[0], v_[1])
-                        mm_ = ['{0:12.5E}'.format(c_) for c_ in p_rr_[k_, :]]
+                        vv_ = p_rr_[k_, :]
+                        ##                vv_= np.arccos(vv_[::-1])
+                        vv_ = vv_[::-1]
+                        tt = vv_[-2] + (vv_[-2] - vv_[-3])  # /(gg_[-2]-gg_[-3])
+                        vv_[-1] = max(tt, -1.)
+                        vv_[0] = 1.0
+                        vv_ = np.arccos(vv_)
+
+                        ##                vv_[0] = 0.0
+                        mm_ = ['{0:12.5E} '.format(c_) for c_ in vv_]
                         out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
+                ##
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
-        # ---------------------------------------------------------------------------------
+            # ---------------------------------------------------------------------------------
+            key_ = '.527'
+            rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
+            rr_ = np.transpose(rr_)
+            gamma_ = np.linspace(0., 1., rr_.shape[1])
+            p_rr_ = np.zeros((nE_, nG_))
+            for k_ in range(nE_):
+                p_rr_[k_, :] = np.interp(gg_, gamma_, rr_[k_, :])
+            p_rr_ = np.power(10, p_rr_) * 10 ** (-6)
+            vz_ = zip(E_, cs_el_[:, 1])
+            ff_ = parot_[key_]['name_out']  # _BRM_
+            if ff_ in exist_dict.keys() or cond_six is True:
 
-        key_ = '.555'
-        eb_el_, heap__ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl.eb'))
-        eb_el_ = eb_el_[:, -1] * 10 ** (-6)
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    # исправление количества строк с учётом 2х новых строчек
+                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
 
-        ra_, ha_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + '.awe'))
-        p_ra_ = np.power(10, ra_[:, 1]) * 10 ** (-6)
-        rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
-        nE_ = rr_.shape[1]
-        rr_ = np.transpose(rr_)
-        rrv_ = np.power(10, rr_)
-        gamma_ = np.logspace(float(heap_[7].split()[0]), 0, int(heap_[7].split()[1]) - 1)
-        p_rr_ = np.zeros((nE_, nG_))
-        gl_ = np.log10(gg_[1:])
-        for k_ in range(nE_):
-            # p_rr_[k_, 1:] = np.interp(gl_, gamma_, rr_[k_, 1:])
-            p_rr_[k_, 1:] = np.interp(gg_[1:], gamma_, rrv_[k_, 1:])
-            p_rr_[k_, -1] =  0.0
-
-        p_rr_ *= 1e-6
-        ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
-        xeb_ = (E_ - eb_el_) / 2.
-        p_rr_[:, 0] = xeb_
-        vz_ = zip(E_, cs_el_[:, 3])
-        ff_ = parot_[key_]['name_out']  # _ION_
-
-        if mat_ == 'air' or mat_ == 'vozduch':
-            set_example_section('ION', idir_)
-
-        if ff_ in exist_dict.keys() or cond_six is True:
-
-            with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
-                # исправление количества строк с учётом 2х новых строчек
-                out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, Emin=E_[0], nG=nG_))
-
-                ss_ = parot_[key_]['data'].format(0.0, 0.0, 0.0)
-                vv_ = p_rr_[0, ::-1]
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-                ss_ = parot_[key_]['data'].format(E_[0] * k2r, 0.0, 0.0)
-                mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
-                out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-
-                for k_, v_ in enumerate(vz_):
-                    ss_ = parot_[key_]['data'].format(v_[0], v_[1], p_ra_[k_])
-                    vv_ = p_rr_[k_, ::-1]
-                    mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
+                    vv_ = p_rr_[0, ::-1]
+                    ss_ = parot_[key_]['data'].format(0.0, 0.0)
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
                     out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
-            copy_file(idir_, ff_, dly[(mat_, Ro_)])
+                    ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
+                    for k_, v_ in enumerate(vz_):
+                        ss_ = parot_[key_]['data'].format(v_[0], v_[1])
+                        vv_ = p_rr_[k_, :]
+                        vv_ = vv_[::-1]
+                        vv_[0] = 0.0
+                        mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
+                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
+            # ---------------------------------------------------------------------------------
+
+            cs_ph_, heap_ph_ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.23'))
+            cs_ph_ = Ro_ * np.power(10, cs_ph_[:, 1:])
+            # ---------------------------------------------------------------------------------
+
+            key_ = '.522'
+            eb_ph_, heap__ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.eb'))
+            eb_ph_ = eb_ph_[:, -1] * 10 ** (-6)
+            vz_ = zip(E_, cs_ph_[:, -1], eb_ph_)
+            ff_ = parot_[key_]['name_out']  # _FOT_
+            if ff_ in exist_dict.keys() or cond_six is True:
+
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, bE=eb_ph_[-1]))
+                    for v_ in vz_:
+                        out_.write(parot_[key_]['data'].format(v_[0], v_[1], v_[2]))
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
+            # ---------------------------------------------------------------------------------
+
+            key_ = '.ive'
+            ive_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl.ive'))
+            ive_ = np.transpose(ive_)
+            gamma_ = np.linspace(0., 1., ive_.shape[1])
+            p_ive_ = np.zeros((nE_, nG_))
+            for k_ in range(nE_):
+                p_ive_[k_, :] = np.interp(gg_, gamma_, ive_[k_, :]) * 10 ** (-6)
+            vz_ = zip(E_, cs_ph_[:, 2])
+            ff_ = parot_[key_]['name_out']  # _KOM_
+            if ff_ in exist_dict.keys() or cond_six is True:
+
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    # исправление количества строк с учётом 2х новых строчек
+                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, nG=nG_))
+
+                    vv_ = p_rr_[0, ::-1]
+                    ss_ = parot_[key_]['data'].format(0.0, 0.0)
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                    ss_ = parot_[key_]['data'].format(E_[0] * 0.99, 0.0, 0.0)
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
+                    for k_, v_ in enumerate(vz_):
+                        ss_ = parot_[key_]['data'].format(v_[0], v_[1])
+                        mm_ = ['{0:12.5E}'.format(c_) for c_ in p_ive_[k_, :]]
+                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
+            # ---------------------------------------------------------------------------------
+
+            key_ = '.516'
+            rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_ph_, 'xtbl' + key_))
+            rr_ = np.transpose(rr_)
+            gamma_ = np.linspace(float(heap_[7].split()[0]), 0, int(heap_[7].split()[1]) - 1)
+            p_rr_ = np.zeros((nE_, nG_))
+            gl_ = np.log10(gg_[1:])
+            for k_ in range(nE_):
+                p_rr_[k_, 1:] = np.interp(gl_, gamma_, rr_[k_, 1:])
+            p_rr_[:, 1:] = np.power(10, p_rr_[:, 1:]) * 10 ** (-6)
+            i_rr_ = (p_rr_ < 1.E-16)
+            E2_ = 2 * phis.E0 / 10 ** 6
+            nE_ = sum(E_ > E2_) + 1
+            p_rr_[i_rr_] = 0.0
+            vz_ = zip(E_, cs_ph_[:, 3])
+            ff_ = parot_[key_]['name_out']  # _PAR_
+            if ff_ in exist_dict.keys() or cond_six is True:
+
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_, nG=nG_))
+                    ##            ss_ = parot_[key_]['data'].format(1.0, 0.0)
+                    ss_ = parot_[key_]['data'].format(E2_, 0.0)
+                    vt_ = 0.0 * np.ones(nG_)
+                    mm_ = ['{0:12.5E}'.format(c_) for c_ in vt_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
+                    for k_, v_ in enumerate(vz_):
+                        if E_[k_] >= E2_:
+                            vv_ = p_rr_[k_, :]
+                            dd_ = v_[0] - E2_ - vv_[-1]
+                            dlog.write('E = {0}: Delta ={1}\n'.format(v_[0], dd_) + '\n')
+                            if dd_ < 0.:
+                                dlog.write('Vend = {0} '.format(v_[-1]) + '\n')
+
+                                vv_[-1] = v_[0] - E2_
+                                dlog.write('Change on Vend = {0}\n'.format(v_[-1]) + '\n')
+
+                            ss_ = parot_[key_]['data'].format(v_[0], v_[1])
+                            mm_ = ['{0:12.5E}'.format(c_) for c_ in p_rr_[k_, :]]
+                            out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
+
+            # ---------------------------------------------------------------------------------
+
+            key_ = '.555'
+            eb_el_, heap__ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl.eb'))
+            eb_el_ = eb_el_[:, -1] * 10 ** (-6)
+
+            ra_, ha_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + '.awe'))
+            p_ra_ = np.power(10, ra_[:, 1]) * 10 ** (-6)
+            rr_, heap_ = xox.read_kiam_file(os.path.join(dir_mat_el_, 'xtbl' + key_))
+            nE_ = rr_.shape[1]
+            rr_ = np.transpose(rr_)
+            rrv_ = np.power(10, rr_)
+            gamma_ = np.logspace(float(heap_[7].split()[0]), 0, int(heap_[7].split()[1]) - 1)
+            p_rr_ = np.zeros((nE_, nG_))
+            gl_ = np.log10(gg_[1:])
+            for k_ in range(nE_):
+                # p_rr_[k_, 1:] = np.interp(gl_, gamma_, rr_[k_, 1:])
+                p_rr_[k_, 1:] = np.interp(gg_[1:], gamma_, rrv_[k_, 1:])
+                p_rr_[k_, -1] = 0.0
+
+            p_rr_ *= 1e-6
+            ##        p_rr_ = np.power(10, p_rr_) * 10 **(-6)
+            xeb_ = (E_ - eb_el_) / 2.
+            p_rr_[:, 0] = xeb_
+            vz_ = zip(E_, cs_el_[:, 3])
+            ff_ = parot_[key_]['name_out']  # _ION_
+
+            if mat_ == 'air' or mat_ == 'vozduch':
+                set_example_section('ION', idir_)
+
+            if ff_ in exist_dict.keys() or cond_six is True:
+
+                with open(os.path.join(idir_, ff_ + '{0:03d}'.format(imat)), 'w') as out_:
+                    # исправление количества строк с учётом 2х новых строчек
+                    out_.write(parot_[key_]['head'].format(material=mat_, nE=nE_ + 2, Emin=E_[0], nG=nG_))
+
+                    ss_ = parot_[key_]['data'].format(0.0, 0.0, 0.0)
+                    vv_ = p_rr_[0, ::-1]
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                    ss_ = parot_[key_]['data'].format(E_[0] * k2r, 0.0, 0.0)
+                    mm_ = ['{0:12.5E}'.format(0.0) for c_ in vv_]
+                    out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+
+                    for k_, v_ in enumerate(vz_):
+                        ss_ = parot_[key_]['data'].format(v_[0], v_[1], p_ra_[k_])
+                        vv_ = p_rr_[k_, ::-1]
+                        mm_ = ['{0:12.5E}'.format(c_) for c_ in vv_]
+                        out_.write(ss_ + reduce(lambda a, b: a + b, mm_) + '\n')
+                copy_file(idir_, ff_, dly[(mat_, Ro_)])
 
     if True:
         pass
@@ -745,7 +749,7 @@ def set_example_section(file_type, save_folder):
 if __name__ == '__main__':
     import pickle
 
-    with open(r'C:\Work\Test_projects\wpala\dp', 'rb') as f:
+    with open(r'C:\Work\Test_projects\tzp_1-0\db', 'rb') as f:
         dp = pickle.load(f)
 
     main(dp)
